@@ -1,12 +1,14 @@
 package it.epicode.capstoneProject.service;
 
+import it.epicode.capstoneProject.exception.BadRequestException;
 import it.epicode.capstoneProject.exception.ConflictException;
 import it.epicode.capstoneProject.exception.InternalServerErrorException;
 import it.epicode.capstoneProject.exception.NotFoundException;
 import it.epicode.capstoneProject.model.classes.Utility;
 import it.epicode.capstoneProject.model.entity.Utente;
 import it.epicode.capstoneProject.model.enums.Ruolo;
-import it.epicode.capstoneProject.model.request.UtenteRequest;
+import it.epicode.capstoneProject.model.request.*;
+import it.epicode.capstoneProject.model.response.LoginResponse;
 import it.epicode.capstoneProject.model.response.UtenteResponse;
 import it.epicode.capstoneProject.repository.UtenteRepository;
 import it.epicode.capstoneProject.security.JwtTools;
@@ -94,5 +96,48 @@ public class UtenteService {
         }
 
         return UtenteResponse.createFromUtente(utente);
+    }
+
+    public LoginResponse login(LoginRequest loginRequest){
+        Utente utente = loginRequest.getUser().contains("@") ? getByEmail(loginRequest.getUser()) : getByUsername(loginRequest.getUser());
+        if (!encoder.matches(loginRequest.getPassword(), utente.getPassword())) throw new BadRequestException("Password errata");
+        return new LoginResponse(jwtTools.createToken(utente), UtenteResponse.createFromUtente(utente));
+    }
+
+    public LoginResponse updateUsername(String username, UpdateUsernameRequest updateUsernameRequest){
+        Utente utente = getByUsername(username);
+        if (utente.getUsername().equals(updateUsernameRequest.getNewUsername().trim())) throw new BadRequestException("Devi cambiare l'username");
+        utente.setUsername(updateUsernameRequest.getNewUsername().trim());
+        utenteRepository.save(utente);
+        return new LoginResponse(jwtTools.createToken(utente), UtenteResponse.createFromUtente(utente));
+    }
+
+    public LoginResponse updateEmail(String username, UpdateEmailRequest updateEmailRequest){
+        Utente utente = getByUsername(username);
+        if (utente.getEmail().equals(updateEmailRequest.getNewEmail().trim())) throw new BadRequestException("Devi cambiare l'email");
+        utente.setEmail(updateEmailRequest.getNewEmail().trim());
+        utenteRepository.save(utente);
+        return new LoginResponse(jwtTools.createToken(utente), UtenteResponse.createFromUtente(utente));
+    }
+
+    public LoginResponse updatePassword(String username, UpdatePasswordRequest updatePasswordRequest){
+        Utente utente = getByUsername(username);
+        if (!encoder.matches(updatePasswordRequest.getOldPassword(), utente.getPassword())) throw new BadRequestException("Password errata");
+        if (encoder.matches(updatePasswordRequest.getNewPassword(), utente.getPassword())) throw new BadRequestException("Devi cambiare la password");
+        utente.setPassword(encoder.encode(updatePasswordRequest.getNewPassword()));
+        utenteRepository.save(utente);
+        return new LoginResponse(jwtTools.createToken(utente), UtenteResponse.createFromUtente(utente));
+    }
+
+    public Utente updateRuolo(String username, UpdateRuoloRequest updateRuoloRequest){
+        Utente utente = getByUsername(username);
+        if (utente.getRuolo() == updateRuoloRequest.getNewRuolo()) throw new BadRequestException("Non puoi assegnare all'utente lo stesso ruolo che già ha");
+        utente.setRuolo(updateRuoloRequest.getNewRuolo());
+        return utenteRepository.save(utente);
+    }
+
+    public void deleteByUsername(String username){
+        Utente utente = getByUsername(username);
+        utenteRepository.delete(utente);
     }
 }
