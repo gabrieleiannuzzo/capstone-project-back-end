@@ -20,6 +20,7 @@ public class CodiceRecuperaPassword {
     private Utente utente;
     private String codice;
     private LocalDateTime dataGenerazione;
+    private Boolean accettato;
 
     public CodiceRecuperaPassword(){}
 
@@ -41,5 +42,6 @@ public class CodiceRecuperaPassword {
     public void setCodice(){
         codice = generaCodice();
         dataGenerazione = LocalDateTime.now();
+        accettato = false;
     }
 }

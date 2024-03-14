@@ -3,6 +3,7 @@ package it.epicode.capstoneProject.service;
 import it.epicode.capstoneProject.exception.BadRequestException;
 import it.epicode.capstoneProject.exception.ConflictException;
 import it.epicode.capstoneProject.exception.NotFoundException;
+import it.epicode.capstoneProject.exception.UnauthorizedException;
 import it.epicode.capstoneProject.model.classes.Utility;
 import it.epicode.capstoneProject.model.entity.CodiceRecuperaPassword;
 import it.epicode.capstoneProject.model.entity.Utente;
@@ -101,9 +102,9 @@ public class UtenteService {
 
     public LoginResponse updatePassword(String username, UpdatePasswordRequest updatePasswordRequest){
         Utente utente = getByUsername(username);
-        if (!encoder.matches(updatePasswordRequest.getOldPassword(), utente.getPassword())) throw new BadRequestException("Password errata");
-        if (encoder.matches(updatePasswordRequest.getNewPassword(), utente.getPassword())) throw new BadRequestException("Devi cambiare la password");
-        utente.setPassword(encoder.encode(updatePasswordRequest.getNewPassword()));
+        if (!encoder.matches(updatePasswordRequest.getOldPassword().trim(), utente.getPassword())) throw new BadRequestException("Password errata");
+        if (encoder.matches(updatePasswordRequest.getNewPassword().trim(), utente.getPassword())) throw new BadRequestException("Devi cambiare la password");
+        utente.setPassword(encoder.encode(updatePasswordRequest.getNewPassword().trim()));
         utenteRepository.save(utente);
         return new LoginResponse(jwtTools.createToken(utente), UtenteResponse.createFromUtente(utente));
     }
@@ -130,6 +131,17 @@ public class UtenteService {
 
         String emailText = Utility.readFile("./email-recupera-password.html").replace("{username}", utente.getUsername()).replace("{code}", code);
         Utility.sendEmail(javaMailSender, utente.getEmail(), "Recupero della password", emailText, true);
+    }
+
+    @Transactional
+    public void resetPassword(UpdatePasswordRequest updatePasswordRequest, String username, String code){
+        Utente utente = getByUsername(username);
+        CodiceRecuperaPassword codiceRecuperaPassword = codiceRecuperaPasswordService.getByUtente(utente);
+        if (!(codiceRecuperaPassword.getCodice().equals(code) && !codiceRecuperaPassword.getAccettato() && codiceRecuperaPassword.getDataGenerazione().isAfter(LocalDateTime.now().minusHours(2)))) throw new UnauthorizedException("Codice scaduto o non presente");
+        if (!encoder.matches(updatePasswordRequest.getOldPassword().trim(), utente.getPassword())) throw new BadRequestException("Password errata");
+        if (encoder.matches(updatePasswordRequest.getOldPassword().trim(), utente.getPassword())) throw new BadRequestException("Devi cambiare la password");
+        utente.setPassword(encoder.encode(updatePasswordRequest.getNewPassword().trim()));
+        utenteRepository.save(utente);
     }
 
     public void deleteByUsername(String username){
