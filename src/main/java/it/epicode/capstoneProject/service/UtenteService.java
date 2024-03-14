@@ -137,9 +137,8 @@ public class UtenteService {
     public void resetPassword(UpdatePasswordRequest updatePasswordRequest, String username, String code){
         Utente utente = getByUsername(username);
         CodiceRecuperaPassword codiceRecuperaPassword = codiceRecuperaPasswordService.getByUtente(utente);
-        if (!(codiceRecuperaPassword.getCodice().equals(code) && !codiceRecuperaPassword.getAccettato() && codiceRecuperaPassword.getDataGenerazione().isAfter(LocalDateTime.now().minusHours(2)))) throw new UnauthorizedException("Codice scaduto o non presente");
-        if (!encoder.matches(updatePasswordRequest.getOldPassword().trim(), utente.getPassword())) throw new BadRequestException("Password errata");
-        if (encoder.matches(updatePasswordRequest.getOldPassword().trim(), utente.getPassword())) throw new BadRequestException("Devi cambiare la password");
+        if (!(codiceRecuperaPassword.getCodice().equals(code) && !codiceRecuperaPassword.isAccettato() && codiceRecuperaPassword.getDataGenerazione().isAfter(LocalDateTime.now().minusHours(2)))) throw new UnauthorizedException("Codice scaduto o non presente");
+        if (encoder.matches(updatePasswordRequest.getNewPassword().trim(), utente.getPassword())) throw new BadRequestException("Devi cambiare la password");
         utente.setPassword(encoder.encode(updatePasswordRequest.getNewPassword().trim()));
         utenteRepository.save(utente);
     }

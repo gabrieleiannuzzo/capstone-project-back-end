@@ -20,12 +20,13 @@ public class CodiceRecuperaPassword {
     private Utente utente;
     private String codice;
     private LocalDateTime dataGenerazione;
-    private Boolean accettato;
+    private boolean accettato;
 
     public CodiceRecuperaPassword(){}
 
     public CodiceRecuperaPassword(Utente utente){
         this.utente = utente;
+        accettato = false;
     }
 
     private String generaCodice(){
