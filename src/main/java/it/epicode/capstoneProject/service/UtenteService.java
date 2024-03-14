@@ -2,9 +2,9 @@ package it.epicode.capstoneProject.service;
 
 import it.epicode.capstoneProject.exception.BadRequestException;
 import it.epicode.capstoneProject.exception.ConflictException;
-import it.epicode.capstoneProject.exception.InternalServerErrorException;
 import it.epicode.capstoneProject.exception.NotFoundException;
 import it.epicode.capstoneProject.model.classes.Utility;
+import it.epicode.capstoneProject.model.entity.CodiceRecuperaPassword;
 import it.epicode.capstoneProject.model.entity.Utente;
 import it.epicode.capstoneProject.model.enums.Ruolo;
 import it.epicode.capstoneProject.model.request.*;
@@ -12,33 +12,23 @@ import it.epicode.capstoneProject.model.response.LoginResponse;
 import it.epicode.capstoneProject.model.response.UtenteResponse;
 import it.epicode.capstoneProject.repository.UtenteRepository;
 import it.epicode.capstoneProject.security.JwtTools;
-import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
-import org.apache.commons.io.FileUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class UtenteService {
-    @Autowired
-    private UtenteRepository utenteRepository;
-
-    @Autowired
-    private PasswordEncoder encoder;
-
-    @Autowired
-    private JavaMailSenderImpl javaMailSender;
-
-    @Autowired
-    private JwtTools jwtTools;
+    private final UtenteRepository utenteRepository;
+    private final PasswordEncoder encoder;
+    private final JavaMailSenderImpl javaMailSender;
+    private final JwtTools jwtTools;
+    private final CodiceRecuperaPasswordService codiceRecuperaPasswordService;
 
     public List<Utente> getAll(){
         return utenteRepository.findAll();
@@ -49,7 +39,7 @@ public class UtenteService {
     }
 
     public Utente getByUsername(String username){
-        return utenteRepository.getByUsername(username).orElseThrow(() -> new NotFoundException("Username non registrata"));
+        return utenteRepository.getByUsername(username).orElseThrow(() -> new NotFoundException("Username non registrato"));
     }
 
     public Utente getByEmail(String email){
@@ -81,19 +71,8 @@ public class UtenteService {
         utente.setVerificato(false);
         utenteRepository.save(utente);
 
-        File file = new File("./email-registrazione.html");
-        String emailText;
-        try {
-            emailText = FileUtils.readFileToString(file, Charset.defaultCharset());
-        } catch (IOException e){
-            throw new InternalServerErrorException("Si è verificato un errore");
-        }
-
-        try {
-            Utility.sendEmail(javaMailSender, utente.getEmail(), "Registrazione avvenuta con successo", emailText, true);
-        } catch (MessagingException e){
-            throw new InternalServerErrorException("Si è verificato un errore");
-        }
+        String emailText = Utility.readFile("./email-registrazione.html");
+        Utility.sendEmail(javaMailSender, utente.getEmail(), "Registrazione avvenuta con successo", emailText, true);
 
         return UtenteResponse.createFromUtente(utente);
     }
@@ -134,6 +113,23 @@ public class UtenteService {
         if (utente.getRuolo() == updateRuoloRequest.getNewRuolo()) throw new BadRequestException("Non puoi assegnare all'utente lo stesso ruolo che già ha");
         utente.setRuolo(updateRuoloRequest.getNewRuolo());
         return utenteRepository.save(utente);
+    }
+
+    @Transactional
+    public void recuperaPassword(RecuperaPasswordRequest request){
+        Utente utente = request.getUser().contains("@") ? getByEmail(request.getUser()) : getByUsername(request.getUser());
+        CodiceRecuperaPassword codiceRecuperaPassword = null;
+        try {
+            codiceRecuperaPassword = codiceRecuperaPasswordService.getByUtente(utente);
+        } catch (NotFoundException e){}
+
+        CodiceRecuperaPassword newCodice = codiceRecuperaPassword == null ? new CodiceRecuperaPassword(utente) : codiceRecuperaPassword;
+        newCodice.setCodice();
+        codiceRecuperaPasswordService.save(newCodice);
+        String code = newCodice.getCodice();
+
+        String emailText = Utility.readFile("./email-recupera-password.html").replace("{username}", utente.getUsername()).replace("{code}", code);
+        Utility.sendEmail(javaMailSender, utente.getEmail(), "Recupero della password", emailText, true);
     }
 
     public void deleteByUsername(String username){

@@ -1,6 +1,7 @@
 package it.epicode.capstoneProject.controller;
 
 import it.epicode.capstoneProject.model.request.LoginRequest;
+import it.epicode.capstoneProject.model.request.RecuperaPasswordRequest;
 import it.epicode.capstoneProject.model.request.UtenteRequest;
 import it.epicode.capstoneProject.model.response.ErrorResponse;
 import it.epicode.capstoneProject.model.response.SuccessResponse;
@@ -28,5 +29,11 @@ public class AuthController {
     @PostMapping("/login")
     public SuccessResponse login(@RequestBody LoginRequest loginRequest){
         return new SuccessResponse(utenteService.login(loginRequest));
+    }
+
+    @PostMapping("/recupera-password")
+    public SuccessResponse recuperaPassword(@RequestBody RecuperaPasswordRequest recuperaPasswordRequest){
+        utenteService.recuperaPassword(recuperaPasswordRequest);
+        return new SuccessResponse();
     }
 }

@@ -8,7 +8,9 @@ public class SuccessResponse {
     private int status;
     private Object response;
 
-    public SuccessResponse(){}
+    public SuccessResponse(){
+        status = HttpStatus.OK.value();
+    }
 
     public SuccessResponse(int status, Object response){
         this.status = status;
