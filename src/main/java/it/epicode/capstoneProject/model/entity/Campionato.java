@@ -27,4 +27,8 @@ public class Campionato {
     private Punteggio punteggi;
     @OneToMany(mappedBy = "campionato")
     private List<Scuderia> scuderie;
+    @OneToMany(mappedBy = "campionato")
+    private List<Pilota> piloti;
+    @OneToMany(mappedBy = "campionato")
+    private List<Gara> gare;
 }

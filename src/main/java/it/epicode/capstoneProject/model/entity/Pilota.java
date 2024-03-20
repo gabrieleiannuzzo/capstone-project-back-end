@@ -3,6 +3,8 @@ package it.epicode.capstoneProject.model.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Entity
 @Table(name = "piloti")
@@ -26,4 +28,6 @@ public class Pilota {
     @ManyToOne
     @JoinColumn(name = "id_scuderia")
     private Scuderia scuderia;
+    @OneToMany(mappedBy = "fastestLapDriver")
+    private List<Gara> giriVeloci;
 }
