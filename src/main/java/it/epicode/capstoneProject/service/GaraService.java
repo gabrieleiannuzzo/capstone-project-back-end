@@ -15,7 +15,7 @@ public class GaraService {
     public Gara save(GaraRequest garaRequest, Campionato campionato, int numeroGara){
         Gara gara = new Gara();
         gara.setCampionato(campionato);
-        gara.setNome(garaRequest.getNome());
+        gara.setNome(garaRequest.getNome().trim());
         gara.setSprint(garaRequest.getSprint());
         gara.setNumeroGara(numeroGara);
         return garaRepository.save(gara);
