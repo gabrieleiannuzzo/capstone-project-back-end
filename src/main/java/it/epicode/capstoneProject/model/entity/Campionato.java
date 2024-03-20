@@ -9,6 +9,7 @@ import java.util.List;
 @Entity
 @Table(name = "campionati", uniqueConstraints = {@UniqueConstraint(columnNames = {"nome", "creator"})})
 public class Campionato {
+    // AGGIUNGERE IL CONTROLLO SU MASSIMO 3 ADMIN
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenza_campionati")
     @SequenceGenerator(name = "sequenza_campionati", initialValue = 1, allocationSize = 1)
@@ -31,4 +32,8 @@ public class Campionato {
     private List<Pilota> piloti;
     @OneToMany(mappedBy = "campionato")
     private List<Gara> gare;
+    @OneToMany(mappedBy = "campionato")
+    private List<Admin> admins;
+    @OneToMany(mappedBy = "campionato")
+    private List<Invito> inviti;
 }
