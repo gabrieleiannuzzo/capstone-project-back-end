@@ -3,6 +3,8 @@ package it.epicode.capstoneProject.model.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Entity
 @Table(name = "campionati", uniqueConstraints = {@UniqueConstraint(columnNames = {"nome", "creator"})})
@@ -21,4 +23,8 @@ public class Campionato {
     @ManyToOne
     @JoinColumn(name = "id_creatore")
     private Utente creatore;
+    @OneToOne
+    private Punteggio punteggi;
+    @OneToMany(mappedBy = "campionato")
+    private List<Scuderia> scuderie;
 }
