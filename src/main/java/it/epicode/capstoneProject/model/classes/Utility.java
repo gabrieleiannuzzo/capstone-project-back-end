@@ -1,5 +1,7 @@
 package it.epicode.capstoneProject.model.classes;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.epicode.capstoneProject.exception.InternalServerErrorException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -12,6 +14,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class Utility {
     public static String convertDate(LocalDateTime localDateTime){
@@ -41,5 +44,23 @@ public class Utility {
             throw new InternalServerErrorException("Si è verificato un errore");
         }
         return text;
+    }
+
+    public static String jsonStringify(Object object){
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            return objectMapper.writeValueAsString(objectMapper);
+        } catch (JsonProcessingException e){
+            throw new InternalServerErrorException();
+        }
+    }
+
+    public static List jsonParseList(String stringifiedList){
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            return objectMapper.readValue(stringifiedList, List.class);
+        } catch (JsonProcessingException e){
+            throw new InternalServerErrorException();
+        }
     }
 }

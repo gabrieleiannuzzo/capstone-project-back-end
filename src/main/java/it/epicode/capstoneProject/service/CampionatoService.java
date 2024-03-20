@@ -5,6 +5,7 @@ import it.epicode.capstoneProject.model.entity.Utente;
 import it.epicode.capstoneProject.model.request.CampionatoRequest;
 import it.epicode.capstoneProject.model.request.GaraRequest;
 import it.epicode.capstoneProject.model.request.ScuderiaRequest;
+import it.epicode.capstoneProject.model.response.CampionatoResponse;
 import it.epicode.capstoneProject.repository.CampionatoRepository;
 import it.epicode.capstoneProject.security.JwtTools;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,7 +24,7 @@ public class CampionatoService {
     private final JwtTools jwtTools;
 
     @Transactional
-    public Campionato save(CampionatoRequest campionatoRequest, HttpServletRequest request){
+    public CampionatoResponse save(CampionatoRequest campionatoRequest, HttpServletRequest request){
         Utente userFromJwt = utenteService.getByUsername(jwtTools.extractUsernameFromAuthorizationHeader(request));
         Campionato campionato = new Campionato();
         campionato.setNome(campionatoRequest.getNome().trim());
@@ -44,6 +45,6 @@ public class CampionatoService {
             GaraRequest garaRequest = campionatoRequest.getGare().get(i);
             garaService.save(garaRequest, campionato, i + 1);
         }
-        return campionato;
+        return CampionatoResponse.createByCampionato(campionato);
     }
 }

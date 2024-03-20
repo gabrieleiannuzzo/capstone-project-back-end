@@ -20,7 +20,7 @@ public class Campionato {
     private boolean saveQuali;
     private boolean polePoint;
     private boolean fastestLapPoint;
-    private int minFastestLapPosition;
+    private Integer minFastestLapPosition;
     @ManyToOne
     @JoinColumn(name = "id_creatore")
     private Utente creatore;
