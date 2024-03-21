@@ -7,6 +7,7 @@ import it.epicode.capstoneProject.model.entity.Campionato;
 import it.epicode.capstoneProject.model.entity.Punteggio;
 import it.epicode.capstoneProject.model.request.PunteggioRequest;
 import it.epicode.capstoneProject.repository.PunteggioRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

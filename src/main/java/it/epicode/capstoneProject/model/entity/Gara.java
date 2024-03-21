@@ -2,6 +2,7 @@ package it.epicode.capstoneProject.model.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 @Data
 @Entity
@@ -13,6 +14,7 @@ public class Gara {
     private int id;
     @ManyToOne
     @JoinColumn(name = "id_campionato")
+    @ToString.Exclude
     private Campionato campionato;
     private String nome;
     private int numeroGara;
@@ -27,5 +29,5 @@ public class Gara {
     private String penalties;
     @ManyToOne
     @JoinColumn(name = "id_pilota_giro_veloce")
-    private Utente fastestLapDriver;
+    private Pilota fastestLapDriver;
 }

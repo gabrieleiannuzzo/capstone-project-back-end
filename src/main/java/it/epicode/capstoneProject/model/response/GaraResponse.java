@@ -33,7 +33,7 @@ public class GaraResponse {
             response.setNome(gara.getNome());
             response.setNumeroGara(gara.getNumeroGara());
             response.setSprint(gara.isSprint());
-            response.setIdPilotaGiroVeloce(gara.getFastestLapDriver().getId());
+            if (gara.getFastestLapDriver() != null) response.setIdPilotaGiroVeloce(gara.getFastestLapDriver().getId());
 
             if (gara.getSprintQuali() != null) response.setSprintQuali(Utility.jsonParseList(gara.getSprintQuali()));
             if (gara.getSprintRace() != null) response.setSprintRace(Utility.jsonParseList(gara.getSprintRace()));

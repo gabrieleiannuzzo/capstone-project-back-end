@@ -2,6 +2,7 @@ package it.epicode.capstoneProject.model.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.util.List;
 
@@ -15,6 +16,7 @@ public class Scuderia {
     private int id;
     @ManyToOne
     @JoinColumn(name = "id_campionato")
+    @ToString.Exclude
     private Campionato campionato;
     private String nome;
     private String codiceColore;

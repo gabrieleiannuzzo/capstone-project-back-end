@@ -23,8 +23,8 @@ public class Campionato {
     private Integer minFastestLapPosition;
     @ManyToOne
     @JoinColumn(name = "id_creatore")
-    private Utente creatore;
-    @OneToOne
+    private Utente creator;
+    @OneToOne(mappedBy = "campionato")
     private Punteggio punteggi;
     @OneToMany(mappedBy = "campionato")
     private List<Scuderia> scuderie;

@@ -1,6 +1,5 @@
 package it.epicode.capstoneProject.model.response;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.epicode.capstoneProject.model.classes.Utility;
 import it.epicode.capstoneProject.model.entity.Campionato;
 import lombok.Data;
@@ -21,7 +20,7 @@ public class CampionatoResponse {
         CampionatoResponse response = new CampionatoResponse();
         response.setId(campionato.getId());
         response.setNome(campionato.getNome());
-        response.setIdCreator(campionato.getCreatore().getId());
+        response.setIdCreator(campionato.getCreator().getId());
 
         CampionatoOptionsResponse options = new CampionatoOptionsResponse();
         options.setRealDrivers(campionato.isRealDrivers());
