@@ -20,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -41,6 +42,13 @@ public class UtenteService {
 
     public Utente getByUsername(String username){
         return utenteRepository.getByUsername(username).orElseThrow(() -> new NotFoundException("Username non registrato"));
+    }
+
+    public List<UtenteResponse> getUtentiByPartialUsername(String username){
+        List<UtenteResponse> response = new ArrayList<>();
+        List<Utente> utenti = utenteRepository.getByUsernameContainingIgnoreCase(username);
+        for (Utente u : utenti) response.add(UtenteResponse.createFromUtente(u));
+        return response;
     }
 
     public Utente getByEmail(String email){

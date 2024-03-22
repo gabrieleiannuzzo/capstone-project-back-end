@@ -43,6 +43,7 @@ public class ResponseExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse exceptionHandler(Exception e){
         // AGGIUNGERE LOG
+        e.printStackTrace();
         return new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getClass().toString());
     }
 }
