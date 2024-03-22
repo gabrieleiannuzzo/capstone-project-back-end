@@ -14,7 +14,7 @@ public class CampionatoRequest {
     // CONTROLLO SU NUMERO DI SCUDERIE (10) E NUMERO DI GARE (2 - 24)
     // CONTROLLO SU SCUDERIE CON NOMI DUPLICATI
     @NotNull(message = "Nome campionato obbligatorio")
-    @Pattern(regexp = "^(?=.*[a-zA-ZÀ-ÿ])[a-zA-ZÀ-ÿ0-9_.,&@*%!?\\[\\]\\(\\)\\$#\\-+]{4,50}$", message = "Nome campionato non valido")
+    @Pattern(regexp = "^(?=.*[a-zA-ZÀ-ÿ])[a-zA-ZÀ-ÿ0-9_.,&@*%!?\\[\\]\\(\\)\\$#\\-+\\s]{4,50}$", message = "Nome campionato non valido")
     private String nome;
     @NotNull(message = "Piloti reali ?")
     private Boolean realDrivers;

@@ -10,7 +10,7 @@ import java.util.List;
 public class CampionatoResponse {
     private int id;
     private String nome;
-    private int idCreator;
+    private CampionatoUtenteResponse creator;
     private CampionatoOptionsResponse options;
     private PunteggioResponse punteggi;
     private List<ScuderiaResponse> scuderie;
@@ -20,7 +20,12 @@ public class CampionatoResponse {
         CampionatoResponse response = new CampionatoResponse();
         response.setId(campionato.getId());
         response.setNome(campionato.getNome());
-        response.setIdCreator(campionato.getCreator().getId());
+
+        CampionatoUtenteResponse campionatoUtenteResponse = new CampionatoUtenteResponse();
+        campionatoUtenteResponse.setId(campionato.getCreator().getId());
+        campionatoUtenteResponse.setUsername(campionato.getCreator().getUsername());
+        campionatoUtenteResponse.setUrlFotoProfilo(campionato.getCreator().getUrlFotoProfilo());
+        response.setCreator(campionatoUtenteResponse);
 
         CampionatoOptionsResponse options = new CampionatoOptionsResponse();
         options.setRealDrivers(campionato.isRealDrivers());

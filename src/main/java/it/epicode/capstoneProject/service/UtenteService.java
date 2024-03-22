@@ -81,6 +81,7 @@ public class UtenteService {
     public LoginResponse login(LoginRequest loginRequest){
         Utente utente = loginRequest.getUser().contains("@") ? getByEmail(loginRequest.getUser()) : getByUsername(loginRequest.getUser());
         if (!encoder.matches(loginRequest.getPassword(), utente.getPassword())) throw new BadRequestException("Password errata");
+        utente.setDataUltimoAccesso(LocalDateTime.now());
         return new LoginResponse(jwtTools.createToken(utente), UtenteResponse.createFromUtente(utente));
     }
 

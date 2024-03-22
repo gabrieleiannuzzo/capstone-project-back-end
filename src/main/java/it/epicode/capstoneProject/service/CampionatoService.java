@@ -1,5 +1,6 @@
 package it.epicode.capstoneProject.service;
 
+import it.epicode.capstoneProject.exception.ConflictException;
 import it.epicode.capstoneProject.exception.NotFoundException;
 import it.epicode.capstoneProject.model.entity.Campionato;
 import it.epicode.capstoneProject.model.entity.Punteggio;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -31,9 +33,26 @@ public class CampionatoService {
         return campionatoRepository.findById(id).orElseThrow(() -> new NotFoundException("Campionato con id = " + id + " non trovato"));
     }
 
+    public List<Campionato> getByCreatorUsername(String username){
+        return campionatoRepository.getByCreatorUsername(username);
+    }
+
+    public CampionatoResponse getCampionatoResponseById(int id) throws NotFoundException{
+        return CampionatoResponse.createByCampionato(getById(id));
+    }
+
+    public Campionato getByCreatorUsernameAndNome(String username, String nome){
+        return campionatoRepository.getByCreatorUsernameAndNome(username, nome).orElseThrow(() -> new NotFoundException("Campionato non trovato"));
+    }
+
     @Transactional
     public CampionatoResponse save(CampionatoRequest campionatoRequest, HttpServletRequest request){
         Utente userFromJwt = utenteService.getByUsername(jwtTools.extractUsernameFromAuthorizationHeader(request));
+        List<Campionato> campionatiByUtente = getByCreatorUsername(userFromJwt.getUsername());
+        if (campionatiByUtente.size() == 5) throw new ConflictException("Non puoi creare più di 5 campionati");
+        for (Campionato c : campionatiByUtente) {
+            if (c.getNome().equals(campionatoRequest.getNome().trim())) throw new ConflictException("Hai già creato un campionato con questo nome");
+        }
 
         Campionato campionato = new Campionato();
         campionato.setNome(campionatoRequest.getNome().trim());

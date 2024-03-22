@@ -7,7 +7,7 @@ import java.util.List;
 
 @Data
 @Entity
-@Table(name = "campionati", uniqueConstraints = {@UniqueConstraint(columnNames = {"nome", "creator"})})
+@Table(name = "campionati", uniqueConstraints = {@UniqueConstraint(columnNames = {"nome", "id_creatore"})})
 public class Campionato {
     // AGGIUNGERE IL CONTROLLO SU MASSIMO 3 ADMIN
     @Id

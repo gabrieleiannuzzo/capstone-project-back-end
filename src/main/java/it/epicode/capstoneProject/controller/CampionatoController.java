@@ -9,10 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/campionati")
@@ -20,7 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class CampionatoController {
     private final CampionatoService campionatoService;
 
+    @GetMapping("/{id}")
+    public SuccessResponse getById(@PathVariable int id){
+        return new SuccessResponse(campionatoService.getCampionatoResponseById(id));
+    }
+
     @PostMapping("")
+    @ResponseStatus(HttpStatus.CREATED)
     public SuccessResponse save(@RequestBody @Validated CampionatoRequest campionatoRequest, BindingResult bindingResult, HttpServletRequest request){
         ErrorResponse.checkRequestBody(bindingResult);
         return new SuccessResponse(HttpStatus.CREATED.value(), campionatoService.save(campionatoRequest, request));
