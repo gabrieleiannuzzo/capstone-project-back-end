@@ -25,6 +25,9 @@ public class Invito {
     private Boolean accepted;
     @Enumerated(EnumType.STRING)
     private RuoloInvito ruoloInvito;
+    @ManyToOne
+    @JoinColumn(name = "id_scuderia")
+    private Scuderia scuderia;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

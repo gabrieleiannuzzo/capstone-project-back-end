@@ -1,5 +1,6 @@
 package it.epicode.capstoneProject.service;
 
+import it.epicode.capstoneProject.exception.NotFoundException;
 import it.epicode.capstoneProject.model.entity.Campionato;
 import it.epicode.capstoneProject.model.entity.Scuderia;
 import it.epicode.capstoneProject.model.request.ScuderiaRequest;
@@ -11,6 +12,10 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ScuderiaService {
     private final ScuderiaRepository scuderiaRepository;
+
+    public Scuderia getById(int id){
+        return scuderiaRepository.findById(id).orElseThrow(()-> new NotFoundException("Scuderia con id = " + id + " non trovata"));
+    }
 
     public Scuderia save(ScuderiaRequest scuderiaRequest, Campionato campionato){
         Scuderia scuderia = new Scuderia();

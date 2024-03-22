@@ -30,6 +30,8 @@ public class Utente implements UserDetails {
     private String urlFotoProfilo;
     @Enumerated(EnumType.STRING)
     private Ruolo ruolo;
+    @OneToMany(mappedBy = "creator")
+    private List<Campionato> campionati;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
