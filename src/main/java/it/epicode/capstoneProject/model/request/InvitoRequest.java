@@ -8,7 +8,7 @@ import lombok.Data;
 public class InvitoRequest {
     @NotNull(message = "id campionato ?")
     private Integer idCampionato;
-    @NotNull(message = "Chi vuoi invitare ?")
+    @NotNull(message = "Inserisci l'utente")
     private String ToUserUsername;
     private RuoloInvito ruoloInvito;
     private Integer idScuderia;

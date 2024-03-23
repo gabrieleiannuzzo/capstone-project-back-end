@@ -3,6 +3,7 @@ package it.epicode.capstoneProject.model.response;
 import it.epicode.capstoneProject.model.classes.Utility;
 import it.epicode.capstoneProject.model.entity.Admin;
 import it.epicode.capstoneProject.model.entity.Campionato;
+import it.epicode.capstoneProject.model.entity.Pilota;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -18,6 +19,9 @@ public class CampionatoResponse {
     private List<ScuderiaResponse> scuderie;
     private List<GaraResponse> gare;
     private List<CampionatoUtenteResponse> admins;
+    private List<PilotaResponse> pilotiTitolari;
+    private List<PilotaResponse> wildCards;
+    private List<PilotaResponse> pilotiRitirati;
 
     public static CampionatoResponse createByCampionato(Campionato campionato){
         CampionatoResponse response = new CampionatoResponse();
@@ -57,6 +61,25 @@ public class CampionatoResponse {
         }
 
         response.setAdmins(admins);
+
+        List<PilotaResponse> pilotiTitolari  = new ArrayList<>();
+        List<PilotaResponse> wildCards  = new ArrayList<>();
+        List<PilotaResponse> pilotiRitirati  = new ArrayList<>();
+
+        for (Pilota p : campionato.getPiloti()) {
+            PilotaResponse pr = PilotaResponse.createByPilota(p);
+            if (!pr.isWildCard() && !pr.isRetired()) {
+                pilotiTitolari.add(pr);
+            } else if (pr.isWildCard()) {
+                wildCards.add(pr);
+            } else {
+                pilotiRitirati.add(pr);
+            }
+        }
+
+        response.setPilotiTitolari(pilotiTitolari);
+        response.setWildCards(wildCards);
+        response.setPilotiRitirati(pilotiRitirati);
 
         return response;
     }
