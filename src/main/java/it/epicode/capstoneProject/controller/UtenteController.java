@@ -1,6 +1,7 @@
 package it.epicode.capstoneProject.controller;
 
 import it.epicode.capstoneProject.model.request.InvitoRequest;
+import it.epicode.capstoneProject.model.request.ManageInvitoRequest;
 import it.epicode.capstoneProject.model.response.ErrorResponse;
 import it.epicode.capstoneProject.model.response.SuccessResponse;
 import it.epicode.capstoneProject.service.InvitoService;
@@ -35,5 +36,12 @@ public class UtenteController {
         ErrorResponse.checkRequestBody(bindingResult);
         invitoService.save(invitoRequest, request);
         return new SuccessResponse(HttpStatus.CREATED.value(), null);
+    }
+
+    @PostMapping("/inviti/{id}/manage")
+    public SuccessResponse manageInvito(@RequestBody @Validated ManageInvitoRequest manageInvitoRequest, BindingResult bindingResult, HttpServletRequest request){
+        ErrorResponse.checkRequestBody(bindingResult);
+        invitoService.manageInvito(manageInvitoRequest, request);
+        return new SuccessResponse();
     }
 }

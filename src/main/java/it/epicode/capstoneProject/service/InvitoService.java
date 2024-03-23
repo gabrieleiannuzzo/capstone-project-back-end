@@ -28,6 +28,7 @@ public class InvitoService {
     private final ScuderiaService scuderiaService;
     private final JwtTools jwtTools;
     private final AdminService adminService;
+    private final PilotaService pilotaService;
 
     public Invito getById(int id){
         return invitoRepository.findById(id).orElseThrow(() -> new NotFoundException("Invito con id = " + id + " non trovato"));
@@ -79,12 +80,19 @@ public class InvitoService {
             throw new UnauthorizedException("Invito scaduto");
         }
         if (invito.getUpdatedAt() != null) throw new ConflictException("Questo invito è già stato gestito");
+
         invito.setAccepted(manageInvitoRequest.getAccepted());
         invito.setUpdatedAt(LocalDateTime.now());
         invitoRepository.save(invito);
 
+        if (!invito.getAccepted()) return;
+
         if (invito.getRuoloInvito() == RuoloInvito.ADMIN) {
             adminService.setAdmin(invito.getToUser(), invito.getCampionato());
+        } else if (invito.getRuoloInvito() == RuoloInvito.PILOTA_TITOLARE) {
+            pilotaService.setPilotaTitolareDaInvito(invito);
+        } else {
+            pilotaService.setWildCardDaInvito(invito);
         }
     }
 
