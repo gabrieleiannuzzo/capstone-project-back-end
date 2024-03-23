@@ -1,9 +1,11 @@
 package it.epicode.capstoneProject.model.response;
 
 import it.epicode.capstoneProject.model.classes.Utility;
+import it.epicode.capstoneProject.model.entity.Admin;
 import it.epicode.capstoneProject.model.entity.Campionato;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -15,6 +17,7 @@ public class CampionatoResponse {
     private PunteggioResponse punteggi;
     private List<ScuderiaResponse> scuderie;
     private List<GaraResponse> gare;
+    private List<CampionatoUtenteResponse> admins;
 
     public static CampionatoResponse createByCampionato(Campionato campionato){
         CampionatoResponse response = new CampionatoResponse();
@@ -43,6 +46,17 @@ public class CampionatoResponse {
 
         response.setScuderie(ScuderiaResponse.createFromScuderiaList(campionato.getScuderie()));
         response.setGare(GaraResponse.createFromGaraList(campionato.getGare()));
+
+        List<CampionatoUtenteResponse> admins = new ArrayList<>();
+        for (Admin a : campionato.getAdmins()) {
+            CampionatoUtenteResponse c = new CampionatoUtenteResponse();
+            c.setId(a.getId());
+            c.setUsername(a.getUtente().getUsername());
+            c.setUrlFotoProfilo(a.getUtente().getUrlFotoProfilo());
+            admins.add(c);
+        }
+
+        response.setAdmins(admins);
 
         return response;
     }

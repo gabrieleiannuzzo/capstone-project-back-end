@@ -70,8 +70,8 @@ public class InvitoService {
     }
 
     @Transactional
-    public void manageInvito(ManageInvitoRequest manageInvitoRequest, HttpServletRequest request){
-        Invito invito = getById(manageInvitoRequest.getIdInvito());
+    public void manageInvito(int id, ManageInvitoRequest manageInvitoRequest, HttpServletRequest request){
+        Invito invito = getById(id);
         if (!(jwtTools.extractUsernameFromAuthorizationHeader(request).equals(invito.getToUser().getUsername()))) throw new UnauthorizedException("Non puoi gestire questo invito");
         if (invito.getCreatedAt().isBefore(LocalDateTime.now().minusWeeks(2))) {
             invito.setAccepted(false);
@@ -88,7 +88,7 @@ public class InvitoService {
         if (!invito.getAccepted()) return;
 
         if (invito.getRuoloInvito() == RuoloInvito.ADMIN) {
-            adminService.setAdmin(invito.getToUser(), invito.getCampionato());
+            adminService.setAdmin(invito);
         } else if (invito.getRuoloInvito() == RuoloInvito.PILOTA_TITOLARE) {
             pilotaService.setPilotaTitolareDaInvito(invito);
         } else {
