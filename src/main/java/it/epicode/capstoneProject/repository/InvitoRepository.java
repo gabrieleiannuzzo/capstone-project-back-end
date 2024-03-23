@@ -9,5 +9,5 @@ import java.util.List;
 
 @Repository
 public interface InvitoRepository extends JpaRepository<Invito, Integer> {
-    public List<Invito> getByToUser(Utente toUser);
+    public List<Invito> getByToUserAndUpdatedAtIsNull(Utente toUser);
 }

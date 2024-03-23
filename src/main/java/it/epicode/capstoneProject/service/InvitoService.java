@@ -1,14 +1,17 @@
 package it.epicode.capstoneProject.service;
 
 import it.epicode.capstoneProject.exception.ConflictException;
+import it.epicode.capstoneProject.exception.NotFoundException;
 import it.epicode.capstoneProject.exception.UnauthorizedException;
 import it.epicode.capstoneProject.model.entity.*;
 import it.epicode.capstoneProject.model.enums.RuoloInvito;
 import it.epicode.capstoneProject.model.request.InvitoRequest;
+import it.epicode.capstoneProject.model.request.ManageInvitoRequest;
 import it.epicode.capstoneProject.model.response.InvitoResponse;
 import it.epicode.capstoneProject.repository.InvitoRepository;
 import it.epicode.capstoneProject.security.JwtTools;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,10 +27,15 @@ public class InvitoService {
     private final UtenteService utenteService;
     private final ScuderiaService scuderiaService;
     private final JwtTools jwtTools;
+    private final AdminService adminService;
+
+    public Invito getById(int id){
+        return invitoRepository.findById(id).orElseThrow(() -> new NotFoundException("Invito con id = " + id + " non trovato"));
+    }
 
     public List<InvitoResponse> getInvitiRicevuti(String username){
         Utente toUser = utenteService.getByUsername(username);
-        List<Invito> inviti = invitoRepository.getByToUser(toUser);
+        List<Invito> inviti = invitoRepository.getByToUserAndUpdatedAtIsNull(toUser);
         List<InvitoResponse> response = new ArrayList<>();
         for (Invito i : inviti) response.add(InvitoResponse.createFromInvito(i));
         return response;
@@ -58,6 +66,26 @@ public class InvitoService {
         invito.setAccepted(false);
         invito.setCreatedAt(LocalDateTime.now());
         invitoRepository.save(invito);
+    }
+
+    @Transactional
+    public void manageInvito(ManageInvitoRequest manageInvitoRequest, HttpServletRequest request){
+        Invito invito = getById(manageInvitoRequest.getIdInvito());
+        if (!(jwtTools.extractUsernameFromAuthorizationHeader(request).equals(invito.getToUser().getUsername()))) throw new UnauthorizedException("Non puoi gestire questo invito");
+        if (invito.getCreatedAt().isBefore(LocalDateTime.now().minusWeeks(2))) {
+            invito.setAccepted(false);
+            invito.setUpdatedAt(LocalDateTime.now());
+            invitoRepository.save(invito);
+            throw new UnauthorizedException("Invito scaduto");
+        }
+        if (invito.getUpdatedAt() != null) throw new ConflictException("Questo invito è già stato gestito");
+        invito.setAccepted(manageInvitoRequest.getAccepted());
+        invito.setUpdatedAt(LocalDateTime.now());
+        invitoRepository.save(invito);
+
+        if (invito.getRuoloInvito() == RuoloInvito.ADMIN) {
+            adminService.setAdmin(invito.getToUser(), invito.getCampionato());
+        }
     }
 
     public boolean checkIdInAdminsList(String username, List<Admin> admins){
