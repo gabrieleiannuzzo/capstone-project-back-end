@@ -1,9 +1,11 @@
 package it.epicode.capstoneProject.controller;
 
 import it.epicode.capstoneProject.model.request.CampionatoRequest;
+import it.epicode.capstoneProject.model.request.InvitoRequest;
 import it.epicode.capstoneProject.model.response.ErrorResponse;
 import it.epicode.capstoneProject.model.response.SuccessResponse;
 import it.epicode.capstoneProject.service.CampionatoService;
+import it.epicode.capstoneProject.service.InvitoService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class CampionatoController {
     private final CampionatoService campionatoService;
+    private final InvitoService invitoService;
 
     @GetMapping("/{id}")
     public SuccessResponse getById(@PathVariable int id){
@@ -27,5 +30,13 @@ public class CampionatoController {
     public SuccessResponse save(@RequestBody @Validated CampionatoRequest campionatoRequest, BindingResult bindingResult, HttpServletRequest request){
         ErrorResponse.checkRequestBody(bindingResult);
         return new SuccessResponse(HttpStatus.CREATED.value(), campionatoService.save(campionatoRequest, request));
+    }
+
+    @PostMapping("/aggiungi-pilota")
+    @ResponseStatus(HttpStatus.CREATED)
+    public SuccessResponse aggiungiPilotaCustom(@RequestBody @Validated InvitoRequest invitoRequest, BindingResult bindingResult, HttpServletRequest request){
+        ErrorResponse.checkRequestBody(bindingResult);
+        invitoService.invitoCustomPilota(invitoRequest, request);
+        return new SuccessResponse(HttpStatus.CREATED.value(), null);
     }
 }

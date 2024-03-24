@@ -45,13 +45,14 @@ public class InvitoService {
     public void save(InvitoRequest invitoRequest, HttpServletRequest request){
         Utente fromUser = utenteService.getByUsername(jwtTools.extractUsernameFromAuthorizationHeader(request));
         Campionato campionato = campionatoService.getById(invitoRequest.getIdCampionato());
+        if (!campionato.isRealDrivers()) throw new ConflictException("Il campionato non prevede piloti reali");
         if (campionato.getCreator().getId() != fromUser.getId() || checkIdInAdminsList(fromUser.getUsername(), campionato.getAdmins())) throw new UnauthorizedException("Non puoi inviare inviti per questo campionato");
         if (fromUser.getUsername().equals(invitoRequest.getToUserUsername())) throw new ConflictException("Non puoi invitare te stesso");
         if (invitoRequest.getRuoloInvito() == RuoloInvito.ADMIN && checkIdInAdminsList(invitoRequest.getToUserUsername(), campionato.getAdmins())) throw new ConflictException("L'utente selezionato è già un admin");
         if (invitoRequest.getRuoloInvito() != RuoloInvito.ADMIN && (checkIdInPilotiList(invitoRequest.getToUserUsername(), campionato.getPiloti()))) throw new ConflictException("L'utente selezionato è già pilota");
         if (invitoRequest.getRuoloInvito() == RuoloInvito.PILOTA_TITOLARE && invitoRequest.getIdScuderia() == null) throw new ConflictException("Devi inserire la scuderia");
         if (invitoRequest.getIdScuderia() != null) {
-            if (checkIdInScuderieList(invitoRequest.getIdScuderia(), campionato.getScuderie())) throw new ConflictException("Non esistono scuderie con questo id");
+            if (!checkIdInScuderieList(invitoRequest.getIdScuderia(), campionato.getScuderie())) throw new ConflictException("Non esistono scuderie con questo id");
             if (extractScuderiaFromScuderieList(invitoRequest.getIdScuderia(), campionato.getScuderie()).getPiloti().size() == 2) throw new ConflictException("La scuderia è piena");
         }
         //INSERIRE CONTROLLO CHE NON CI SIA GIA L'INVITO
@@ -88,11 +89,32 @@ public class InvitoService {
         if (!invito.getAccepted()) return;
 
         if (invito.getRuoloInvito() == RuoloInvito.ADMIN) {
-            adminService.setAdmin(invito);
+            adminService.setAdmin(invito.getToUser(), invito.getCampionato());
         } else if (invito.getRuoloInvito() == RuoloInvito.PILOTA_TITOLARE) {
-            pilotaService.setPilotaTitolareDaInvito(invito);
+            pilotaService.setPilotaTitolareDaInvito(invito.getToUser(), invito.getCampionato(), invito.getScuderia());
         } else {
-            pilotaService.setWildCardDaInvito(invito);
+            pilotaService.setWildCardDaInvito(invito.getToUser(), invito.getCampionato());
+        }
+    }
+
+    public void invitoCustomPilota(InvitoRequest invitoRequest, HttpServletRequest request){
+        Utente fromUser = utenteService.getByUsername(jwtTools.extractUsernameFromAuthorizationHeader(request));
+        Campionato c = campionatoService.getById(invitoRequest.getIdCampionato());
+
+        if (c.isRealDrivers()) throw new ConflictException("Il campionato non prevede piloti custom");
+        if (c.getCreator().getId() != fromUser.getId()) throw new UnauthorizedException("Non puoi gestire questo campionato");
+        if (invitoRequest.getRuoloInvito() == RuoloInvito.PILOTA_TITOLARE && invitoRequest.getIdScuderia() == null) throw new ConflictException("Devi inserire la scuderia");
+        if (invitoRequest.getIdScuderia() != null) {
+            if (!checkIdInScuderieList(invitoRequest.getIdScuderia(), c.getScuderie())) throw new ConflictException("Non esistono scuderie con questo id");
+            if (extractScuderiaFromScuderieList(invitoRequest.getIdScuderia(), c.getScuderie()).getPiloti().size() == 2) throw new ConflictException("La scuderia è piena");
+        }
+        if (invitoRequest.getRuoloInvito() == RuoloInvito.ADMIN) throw new ConflictException("Non puoi invitare utenti custom come admin");
+        if (invitoRequest.getToUserUsername() == null) throw new ConflictException("Devi inserire il nome del pilota");
+
+        if (invitoRequest.getRuoloInvito() == RuoloInvito.PILOTA_TITOLARE) {
+            pilotaService.setPilotaTitolareCustom(invitoRequest.getToUserUsername(), c, scuderiaService.getById(invitoRequest.getIdScuderia()));
+        } else {
+            pilotaService.setWildCardCustom(invitoRequest.getToUserUsername(), c);
         }
     }
 

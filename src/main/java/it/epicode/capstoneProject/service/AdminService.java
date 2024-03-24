@@ -1,7 +1,8 @@
 package it.epicode.capstoneProject.service;
 
 import it.epicode.capstoneProject.model.entity.Admin;
-import it.epicode.capstoneProject.model.entity.Invito;
+import it.epicode.capstoneProject.model.entity.Campionato;
+import it.epicode.capstoneProject.model.entity.Utente;
 import it.epicode.capstoneProject.repository.AdminRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -11,10 +12,10 @@ import org.springframework.stereotype.Service;
 public class AdminService {
     private final AdminRepository adminRepository;
 
-    public void setAdmin(Invito i){
+    public void setAdmin(Utente u, Campionato c){
         Admin a = new Admin();
-        a.setUtente(i.getToUser());
-        a.setCampionato(i.getCampionato());
+        a.setUtente(u);
+        a.setCampionato(c);
         adminRepository.save(a);
     }
 }
