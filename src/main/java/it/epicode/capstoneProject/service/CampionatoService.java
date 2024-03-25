@@ -53,6 +53,7 @@ public class CampionatoService {
         for (Campionato c : campionatiByUtente) {
             if (c.getNome().equals(campionatoRequest.getNome().trim())) throw new ConflictException("Hai già creato un campionato con questo nome");
         }
+        System.out.println(campionatoRequest);
 
         Campionato campionato = new Campionato();
         campionato.setNome(campionatoRequest.getNome().trim());
@@ -76,6 +77,8 @@ public class CampionatoService {
             GaraRequest garaRequest = campionatoRequest.getGare().get(i);
             campionato.getGare().add(garaService.save(garaRequest, campionato, i + 1));
         }
+        campionato.setAdmins(new ArrayList<>());
+        campionato.setPiloti(new ArrayList<>());
         return CampionatoResponse.createByCampionato(campionato);
     }
 }

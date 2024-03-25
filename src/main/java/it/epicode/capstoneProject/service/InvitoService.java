@@ -109,12 +109,32 @@ public class InvitoService {
             if (extractScuderiaFromScuderieList(invitoRequest.getIdScuderia(), c.getScuderie()).getPiloti().size() == 2) throw new ConflictException("La scuderia è piena");
         }
         if (invitoRequest.getRuoloInvito() == RuoloInvito.ADMIN) throw new ConflictException("Non puoi invitare utenti custom come admin");
-        if (invitoRequest.getToUserUsername() == null) throw new ConflictException("Devi inserire il nome del pilota");
 
         if (invitoRequest.getRuoloInvito() == RuoloInvito.PILOTA_TITOLARE) {
             pilotaService.setPilotaTitolareCustom(invitoRequest.getToUserUsername(), c, scuderiaService.getById(invitoRequest.getIdScuderia()));
         } else {
             pilotaService.setWildCardCustom(invitoRequest.getToUserUsername(), c);
+        }
+    }
+
+    public void partecipaACampionato(InvitoRequest invitoRequest, HttpServletRequest request){
+        Utente u = utenteService.getByUsername(jwtTools.extractUsernameFromAuthorizationHeader(request));
+        Campionato c = campionatoService.getById(invitoRequest.getIdCampionato());
+
+        if (!u.getUsername().equals(invitoRequest.getToUserUsername())) throw new UnauthorizedException("Non puoi eseguire questa operazione");
+        if (c.getCreator().getId() != u.getId() || !checkIdInAdminsList(u.getUsername(), c.getAdmins())) throw new UnauthorizedException("Non puoi eseguire questa operazione");
+        if (!c.isRealDrivers()) throw new ConflictException("Il campionato non prevede piloti reali");
+        if (invitoRequest.getRuoloInvito() == RuoloInvito.ADMIN) throw new ConflictException("Non puoi partecipare come admin");
+        if (invitoRequest.getRuoloInvito() == RuoloInvito.PILOTA_TITOLARE && invitoRequest.getIdScuderia() == null) throw new ConflictException("Devi inserire la scuderia");
+        if (invitoRequest.getIdScuderia() != null) {
+            if (!checkIdInScuderieList(invitoRequest.getIdScuderia(), c.getScuderie())) throw new ConflictException("Non esistono scuderie con questo id");
+            if (extractScuderiaFromScuderieList(invitoRequest.getIdScuderia(), c.getScuderie()).getPiloti().size() == 2) throw new ConflictException("La scuderia è piena");
+        }
+
+        if (invitoRequest.getRuoloInvito() == RuoloInvito.PILOTA_TITOLARE) {
+            pilotaService.partecipaComePilotaTitolare(u, c, scuderiaService.getById(invitoRequest.getIdScuderia()));
+        } else {
+            pilotaService.partecipaComeWildCard(u, c);
         }
     }
 

@@ -39,4 +39,12 @@ public class CampionatoController {
         invitoService.invitoCustomPilota(invitoRequest, request);
         return new SuccessResponse(HttpStatus.CREATED.value(), null);
     }
+
+    @PostMapping("/partecipa")
+    @ResponseStatus(HttpStatus.CREATED)
+    public SuccessResponse partecipa(@RequestBody @Validated InvitoRequest invitoRequest, BindingResult bindingResult, HttpServletRequest request){
+        ErrorResponse.checkRequestBody(bindingResult);
+        invitoService.partecipaACampionato(invitoRequest, request);
+        return new SuccessResponse(HttpStatus.CREATED.value(), null);
+    }
 }
