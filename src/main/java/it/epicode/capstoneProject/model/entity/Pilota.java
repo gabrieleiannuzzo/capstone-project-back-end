@@ -22,7 +22,7 @@ public class Pilota {
     @ManyToOne
     @JoinColumn(name = "id_campionato")
     private Campionato campionato;
-    private Boolean wildCard;
+    private boolean wildCard;
     private boolean retired;
     private int punti;
     @ManyToOne

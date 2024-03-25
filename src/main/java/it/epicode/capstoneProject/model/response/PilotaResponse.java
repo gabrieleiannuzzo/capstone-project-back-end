@@ -27,10 +27,10 @@ public class PilotaResponse {
             response.setNome(pilota.getNome());
         }
 
-        response.setWildCard(pilota.getWildCard());
+        response.setWildCard(pilota.isWildCard());
         response.setRetired(pilota.isRetired());
         response.setPunti(pilota.getPunti());
-        if (!pilota.getWildCard() && !pilota.isRetired()) response.setScuderia(ScuderiaResponse.createFromScuderia(pilota.getScuderia()));
+        if (!pilota.isWildCard() && !pilota.isRetired()) response.setScuderia(ScuderiaResponse.createFromScuderia(pilota.getScuderia()));
         return response;
     }
 }

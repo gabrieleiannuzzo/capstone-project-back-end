@@ -68,12 +68,12 @@ public class CampionatoResponse {
 
         for (Pilota p : campionato.getPiloti()) {
             PilotaResponse pr = PilotaResponse.createByPilota(p);
-            if (!pr.isWildCard() && !pr.isRetired()) {
-                pilotiTitolari.add(pr);
+            if (pr.isRetired()) {
+                pilotiRitirati.add(pr);
             } else if (pr.isWildCard()) {
                 wildCards.add(pr);
             } else {
-                pilotiRitirati.add(pr);
+                pilotiTitolari.add(pr);
             }
         }
 

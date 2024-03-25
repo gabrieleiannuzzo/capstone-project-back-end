@@ -54,7 +54,6 @@ public class CampionatoController {
     @PutMapping("/change-status-pilota")
     public SuccessResponse changeStatusPilota(@RequestBody @Validated ChangeStatusPilotaRequest changeStatusPilotaRequest, BindingResult bindingResult, HttpServletRequest request){
         ErrorResponse.checkRequestBody(bindingResult);
-        pilotaService.changeStatusPilota(changeStatusPilotaRequest, request);
-        return new SuccessResponse();
+        return new SuccessResponse(pilotaService.changeStatusPilota(changeStatusPilotaRequest, request));
     }
 }
