@@ -1,11 +1,13 @@
 package it.epicode.capstoneProject.controller;
 
 import it.epicode.capstoneProject.model.request.CampionatoRequest;
+import it.epicode.capstoneProject.model.request.ChangeStatusPilotaRequest;
 import it.epicode.capstoneProject.model.request.InvitoRequest;
 import it.epicode.capstoneProject.model.response.ErrorResponse;
 import it.epicode.capstoneProject.model.response.SuccessResponse;
 import it.epicode.capstoneProject.service.CampionatoService;
 import it.epicode.capstoneProject.service.InvitoService;
+import it.epicode.capstoneProject.service.PilotaService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class CampionatoController {
     private final CampionatoService campionatoService;
     private final InvitoService invitoService;
+    private final PilotaService pilotaService;
 
     @GetMapping("/{id}")
     public SuccessResponse getById(@PathVariable int id){
@@ -46,5 +49,12 @@ public class CampionatoController {
         ErrorResponse.checkRequestBody(bindingResult);
         invitoService.partecipaACampionato(invitoRequest, request);
         return new SuccessResponse(HttpStatus.CREATED.value(), null);
+    }
+
+    @PutMapping("/change-status-pilota")
+    public SuccessResponse changeStatusPilota(@RequestBody @Validated ChangeStatusPilotaRequest changeStatusPilotaRequest, BindingResult bindingResult, HttpServletRequest request){
+        ErrorResponse.checkRequestBody(bindingResult);
+        pilotaService.changeStatusPilota(changeStatusPilotaRequest, request);
+        return new SuccessResponse();
     }
 }

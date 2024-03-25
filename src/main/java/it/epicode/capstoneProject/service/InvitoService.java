@@ -120,9 +120,10 @@ public class InvitoService {
     public void partecipaACampionato(InvitoRequest invitoRequest, HttpServletRequest request){
         Utente u = utenteService.getByUsername(jwtTools.extractUsernameFromAuthorizationHeader(request));
         Campionato c = campionatoService.getById(invitoRequest.getIdCampionato());
+        System.out.println(invitoRequest);
 
         if (!u.getUsername().equals(invitoRequest.getToUserUsername())) throw new UnauthorizedException("Non puoi eseguire questa operazione");
-        if (c.getCreator().getId() != u.getId() || !checkIdInAdminsList(u.getUsername(), c.getAdmins())) throw new UnauthorizedException("Non puoi eseguire questa operazione");
+        if (c.getCreator().getId() != u.getId() && !checkIdInAdminsList(u.getUsername(), c.getAdmins())) throw new UnauthorizedException("Non puoi eseguire questa operazione");
         if (!c.isRealDrivers()) throw new ConflictException("Il campionato non prevede piloti reali");
         if (invitoRequest.getRuoloInvito() == RuoloInvito.ADMIN) throw new ConflictException("Non puoi partecipare come admin");
         if (invitoRequest.getRuoloInvito() == RuoloInvito.PILOTA_TITOLARE && invitoRequest.getIdScuderia() == null) throw new ConflictException("Devi inserire la scuderia");
