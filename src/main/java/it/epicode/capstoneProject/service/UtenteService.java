@@ -20,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -41,6 +42,13 @@ public class UtenteService {
 
     public Utente getByUsername(String username){
         return utenteRepository.getByUsername(username).orElseThrow(() -> new NotFoundException("Username non registrato"));
+    }
+
+    public List<UtenteResponse> getUtentiByPartialUsername(String username){
+        List<UtenteResponse> response = new ArrayList<>();
+        List<Utente> utenti = utenteRepository.getByUsernameContainingIgnoreCase(username);
+        for (Utente u : utenti) response.add(UtenteResponse.createFromUtente(u));
+        return response;
     }
 
     public Utente getByEmail(String email){
@@ -81,6 +89,7 @@ public class UtenteService {
     public LoginResponse login(LoginRequest loginRequest){
         Utente utente = loginRequest.getUser().contains("@") ? getByEmail(loginRequest.getUser()) : getByUsername(loginRequest.getUser());
         if (!encoder.matches(loginRequest.getPassword(), utente.getPassword())) throw new BadRequestException("Password errata");
+        utente.setDataUltimoAccesso(LocalDateTime.now());
         return new LoginResponse(jwtTools.createToken(utente), UtenteResponse.createFromUtente(utente));
     }
 

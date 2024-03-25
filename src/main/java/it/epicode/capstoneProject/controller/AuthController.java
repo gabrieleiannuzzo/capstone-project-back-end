@@ -7,6 +7,7 @@ import it.epicode.capstoneProject.model.request.UtenteRequest;
 import it.epicode.capstoneProject.model.response.ErrorResponse;
 import it.epicode.capstoneProject.model.response.SuccessResponse;
 import it.epicode.capstoneProject.service.UtenteService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
@@ -15,9 +16,9 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
+@RequiredArgsConstructor
 public class AuthController {
-    @Autowired
-    private UtenteService utenteService;
+    private final UtenteService utenteService;
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
