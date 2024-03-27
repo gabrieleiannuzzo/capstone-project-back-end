@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
 
+import java.util.List;
+
 @Data
 @Entity
 @Table(name = "gare")
@@ -30,4 +32,6 @@ public class Gara {
     @ManyToOne
     @JoinColumn(name = "id_pilota_giro_veloce")
     private Pilota fastestLapDriver;
+    @OneToMany(mappedBy = "gara")
+    private List<WildCardPerGara> wildCards;
 }

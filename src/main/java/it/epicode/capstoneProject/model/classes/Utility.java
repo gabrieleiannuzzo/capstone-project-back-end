@@ -3,6 +3,10 @@ package it.epicode.capstoneProject.model.classes;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.epicode.capstoneProject.exception.InternalServerErrorException;
+import it.epicode.capstoneProject.exception.UnauthorizedException;
+import it.epicode.capstoneProject.model.entity.Admin;
+import it.epicode.capstoneProject.model.entity.Campionato;
+import it.epicode.capstoneProject.model.entity.Utente;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.apache.commons.io.FileUtils;
@@ -62,5 +66,15 @@ public class Utility {
         } catch (JsonProcessingException e){
             throw new InternalServerErrorException();
         }
+    }
+
+    public static void isUserAuthorizedToChampionship(Campionato c, Utente u, String msg){
+        if (u.getId() == c.getCreator().getId()) return;
+
+        for (Admin a : c.getAdmins()) {
+            if (a.getId() == u.getId()) return;
+        }
+
+        throw new UnauthorizedException(msg);
     }
 }

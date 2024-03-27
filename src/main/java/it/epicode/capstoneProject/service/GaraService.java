@@ -1,16 +1,34 @@
 package it.epicode.capstoneProject.service;
 
+import it.epicode.capstoneProject.exception.ConflictException;
+import it.epicode.capstoneProject.exception.NotFoundException;
+import it.epicode.capstoneProject.model.classes.Utility;
 import it.epicode.capstoneProject.model.entity.Campionato;
 import it.epicode.capstoneProject.model.entity.Gara;
+import it.epicode.capstoneProject.model.entity.Pilota;
+import it.epicode.capstoneProject.model.entity.Utente;
+import it.epicode.capstoneProject.model.request.AggiornaGaraRequest;
 import it.epicode.capstoneProject.model.request.GaraRequest;
+import it.epicode.capstoneProject.model.request.WildCardPerGaraRequest;
 import it.epicode.capstoneProject.repository.GaraRepository;
+import it.epicode.capstoneProject.security.JwtTools;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class GaraService {
     private final GaraRepository garaRepository;
+    private final UtenteService utenteService;
+    private final JwtTools jwtTools;
+
+    public Gara getById(int id){
+        return garaRepository.findById(id).orElseThrow(() -> new NotFoundException("Gara con id = " + id + " non trovata"));
+    }
 
     public Gara save(GaraRequest garaRequest, Campionato campionato, int numeroGara){
         Gara gara = new Gara();
@@ -19,5 +37,97 @@ public class GaraService {
         gara.setSprint(garaRequest.getSprint());
         gara.setNumeroGara(numeroGara);
         return garaRepository.save(gara);
+    }
+
+    public void aggiornaGara(AggiornaGaraRequest aggiornaGaraRequest, HttpServletRequest request){
+        Gara g = getById(aggiornaGaraRequest.getIdGara());
+        Campionato c = g.getCampionato();
+        Utente u = utenteService.getByUsername(jwtTools.extractUsernameFromAuthorizationHeader(request));
+
+        Utility.isUserAuthorizedToChampionship(c, u, "Non sei autorizzato a gestire questo campionato");
+
+        // controllo che i risultati della gara non siano già stati inseriti
+        if (g.getSprintQuali() != null || g.getSprintRace() != null || g.getSprintPenalties() != null || g.getSprintRetired() != null || g.getQuali() != null || g.getRace() != null || g.getPenalties() != null || g.getRetired() != null || g.getFastestLapDriver() != null || g.getWildCards().isEmpty()) throw new ConflictException("Risultati gara già inseriti");
+        // controllo giro veloce
+        if (c.isFastestLapPoint() && aggiornaGaraRequest.getIdPilotaFastestLap() == null) throw new ConflictException("Devi inserire il giro veloce");
+        // controllo qualifiche
+        if (c.isSaveQuali() && !isListValid(aggiornaGaraRequest.getQuali())) throw new ConflictException("Devi inserire le qualifiche");
+        if (c.isPolePoint() && !isListValid(aggiornaGaraRequest.getQuali())) {
+            if (c.isSaveQuali()) throw new ConflictException("Devi inserire i risultati delle qualifiche");
+            if (c.isPolePoint()) throw new ConflictException("Devi inserire la pole position");
+        }
+        // controlli sprint
+        if (!g.isSprint() && (aggiornaGaraRequest.getSprintQuali() != null || aggiornaGaraRequest.getSprintRace() != null || aggiornaGaraRequest.getSprintPenalties() != null || aggiornaGaraRequest.getSprintRetired() != null)) throw new ConflictException("Non possono esserci dati sprint");
+        if (g.isSprint()) {
+            if (!isListValid(aggiornaGaraRequest.getSprintRace())) throw new ConflictException("Devi inserire la sprint race");
+            if (c.isSaveQuali() && c.isIndependentSprint() && !isListValid(aggiornaGaraRequest.getSprintQuali())) throw new ConflictException("Devi inserire le qualifiche sprint");
+        }
+        // controlli piloti
+        List<List<Integer>> eventi = List.of(aggiornaGaraRequest.getSprintQuali(), aggiornaGaraRequest.getSprintRace(), aggiornaGaraRequest.getSprintPenalties(), aggiornaGaraRequest.getSprintRetired(), aggiornaGaraRequest.getQuali(), aggiornaGaraRequest.getRace(), aggiornaGaraRequest.getPenalties(), aggiornaGaraRequest.getRetired());
+        for (WildCardPerGaraRequest w : aggiornaGaraRequest.getWildCards()) {
+            int id = w.getIdWildCard();
+            if (!listsContainWildCard(eventi, id)) throw new ConflictException("Alcune wild card non sono utilizzate");
+            if (!isScuderiaInChampionship(w.getIdScuderia(), c)) throw new ConflictException("Le scuderie devono appartenere al campionato");
+        }
+        if (listsContainRetiredDrivers(eventi, c)) throw new ConflictException("I piloti ritirati non possono partecipare");
+        if (!areDriversInChampionship(eventi, c)) throw new ConflictException("I piloti devono appartenere al campionato");
+        if (!areDriversInRace(aggiornaGaraRequest.getRace(), aggiornaGaraRequest.getRetired())) throw new ConflictException("I piloti ritirati devono aver corso");
+        if (!areDriversInRace(aggiornaGaraRequest.getRace(), aggiornaGaraRequest.getPenalties())) throw new ConflictException("I piloti penalizzati devono aver corso");
+        if (g.isSprint()) {
+            if (!areDriversInRace(aggiornaGaraRequest.getSprintRace(), aggiornaGaraRequest.getSprintRetired())) throw new ConflictException("I piloti ritirati devono aver corso");
+            if (!areDriversInRace(aggiornaGaraRequest.getSprintRace(), aggiornaGaraRequest.getSprintPenalties())) throw new ConflictException("I piloti penalizzati devono aver corso");
+        }
+    }
+
+    public boolean isListValid(List<Integer> event){
+        return (event != null && !event.isEmpty());
+    }
+
+    public boolean listsContainWildCard(List<List<Integer>> eventi, int idWildCard){
+        for (List<Integer> e : eventi) {
+            if (e == null) return false;
+            if (e.isEmpty()) return false;
+            if (!e.contains(idWildCard)) return false;
+        }
+        return true;
+    }
+
+    public boolean listsContainRetiredDrivers(List<List<Integer>> eventi, Campionato c){
+        List<Pilota> pilotiRitirati = c.getPiloti().stream().filter(Pilota::isRetired).toList();
+        for (Pilota p : pilotiRitirati) {
+            for (List<Integer> e : eventi) {
+                if (e == null) continue;
+                if (e.isEmpty()) continue;
+                for (Integer pilota : e) {
+                    if (p.getId() == pilota) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean areDriversInChampionship(List<List<Integer>> eventi, Campionato c){
+        for (List<Integer> e : eventi) {
+            if (e == null) continue;
+            if (e.isEmpty()) continue;
+            for (Integer p : e) {
+                if (!c.getPiloti().stream().anyMatch(pilota -> pilota.getId() == p)) return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean isScuderiaInChampionship(int idScuderia, Campionato c){
+        return c.getScuderie().stream().anyMatch(s -> s.getId() == idScuderia);
+    }
+
+    public boolean areDriversInRace(List<Integer> evento, List<Integer> lista){
+        if (lista == null || lista.isEmpty()) return true;
+        for (Integer p : lista) {
+            if (!evento.contains(p)) return false;
+        }
+        return true;
     }
 }
