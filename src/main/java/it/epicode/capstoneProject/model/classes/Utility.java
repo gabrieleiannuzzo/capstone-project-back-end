@@ -53,7 +53,7 @@ public class Utility {
     public static String jsonStringify(Object object){
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            return objectMapper.writeValueAsString(objectMapper);
+            return objectMapper.writeValueAsString(object);
         } catch (JsonProcessingException e){
             throw new InternalServerErrorException();
         }

@@ -1,9 +1,11 @@
 package it.epicode.capstoneProject.model.entity;
 
+import it.epicode.capstoneProject.model.classes.Utility;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -34,4 +36,15 @@ public class Gara {
     private Pilota fastestLapDriver;
     @OneToMany(mappedBy = "gara")
     private List<WildCardPerGara> wildCards;
+
+    public Gara(){
+        sprintQuali = Utility.jsonStringify(new ArrayList<Integer>());
+        sprintRace = Utility.jsonStringify(new ArrayList<Integer>());
+        sprintRetired = Utility.jsonStringify(new ArrayList<Integer>());
+        sprintPenalties = Utility.jsonStringify(new ArrayList<Integer>());
+        quali = Utility.jsonStringify(new ArrayList<Integer>());
+        race = Utility.jsonStringify(new ArrayList<Integer>());
+        retired = Utility.jsonStringify(new ArrayList<Integer>());
+        penalties = Utility.jsonStringify(new ArrayList<Integer>());
+    }
 }

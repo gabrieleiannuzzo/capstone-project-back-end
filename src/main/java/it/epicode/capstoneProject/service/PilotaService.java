@@ -166,6 +166,7 @@ public class PilotaService {
 
     @Transactional
     public void updateStatistiche(Gara gara, AggiornaGaraRequest aggiornaGaraRequest, Pilota pilota){
+        if (pilota.getUtente() == null) return;
         StatisticaUtente statisticaUtente = statisticaUtenteRepository.getByUserId(pilota.getUtente().getId());
         statisticaUtente.setPosizioneMediaGara(aggiornaMedia(aggiornaGaraRequest.getRace(), pilota, statisticaUtente.getPosizioneMediaGara(), statisticaUtente.getNumeroGareDisputate()));
         statisticaUtente.setPosizioneMediaQualifica(aggiornaMedia(aggiornaGaraRequest.getQuali(), pilota, statisticaUtente.getPosizioneMediaQualifica(), statisticaUtente.getNumeroGareDisputate()));
@@ -181,6 +182,7 @@ public class PilotaService {
 
     @Transactional
     public void updateStatisticheSprint(Gara gara, AggiornaGaraRequest aggiornaGaraRequest, Pilota pilota){
+        if (pilota.getUtente() == null) return;
         StatisticaSprintUtente statisticaSprintUtente = statisticaSprintUtenteRepository.getByUserId(pilota.getUtente().getId());
         statisticaSprintUtente.setPosizioneMediaGara(aggiornaMedia(aggiornaGaraRequest.getSprintRace(), pilota, statisticaSprintUtente.getPosizioneMediaGara(), statisticaSprintUtente.getNumeroSprintDisputate()));
         statisticaSprintUtente.setNumeroSprintDisputate(statisticaSprintUtente.getNumeroSprintDisputate() + 1);
