@@ -16,7 +16,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,7 +23,9 @@ import java.util.List;
 public class GaraService {
     private final GaraRepository garaRepository;
     private final UtenteService utenteService;
+    private final PilotaService pilotaService;
     private final JwtTools jwtTools;
+    private final ScuderiaService scuderiaService;
 
     public Gara getById(int id){
         return garaRepository.findById(id).orElseThrow(() -> new NotFoundException("Gara con id = " + id + " non trovata"));
@@ -49,7 +50,12 @@ public class GaraService {
         // controllo che i risultati della gara non siano già stati inseriti
         if (g.getSprintQuali() != null || g.getSprintRace() != null || g.getSprintPenalties() != null || g.getSprintRetired() != null || g.getQuali() != null || g.getRace() != null || g.getPenalties() != null || g.getRetired() != null || g.getFastestLapDriver() != null || g.getWildCards().isEmpty()) throw new ConflictException("Risultati gara già inseriti");
         // controllo giro veloce
-        if (c.isFastestLapPoint() && aggiornaGaraRequest.getIdPilotaFastestLap() == null) throw new ConflictException("Devi inserire il giro veloce");
+        if (c.isFastestLapPoint()) {
+            if (aggiornaGaraRequest.getIdPilotaFastestLap() == null) throw new ConflictException("Devi inserire il giro veloce");
+            Pilota p = pilotaService.getById(aggiornaGaraRequest.getIdPilotaFastestLap());
+            if (!c.getPiloti().stream().anyMatch(pilota -> pilota.getId() == p.getId())) throw new ConflictException("Il pilota deve appartenere al campionato");
+            if (p.isRetired()) throw new ConflictException("Il pilota non può essere ritirato");
+        }
         // controllo qualifiche
         if (c.isSaveQuali() && !isListValid(aggiornaGaraRequest.getQuali())) throw new ConflictException("Devi inserire le qualifiche");
         if (c.isPolePoint() && !isListValid(aggiornaGaraRequest.getQuali())) {
@@ -76,6 +82,61 @@ public class GaraService {
         if (g.isSprint()) {
             if (!areDriversInRace(aggiornaGaraRequest.getSprintRace(), aggiornaGaraRequest.getSprintRetired())) throw new ConflictException("I piloti ritirati devono aver corso");
             if (!areDriversInRace(aggiornaGaraRequest.getSprintRace(), aggiornaGaraRequest.getSprintPenalties())) throw new ConflictException("I piloti penalizzati devono aver corso");
+        }
+
+        if (g.isSprint()) {
+            if (c.isSaveQuali() && c.isIndependentSprint()) g.setSprintQuali(Utility.jsonStringify(aggiornaGaraRequest.getSprintQuali()));
+            g.setSprintRace(Utility.jsonStringify(aggiornaGaraRequest.getSprintRace()));
+            g.setSprintRetired(Utility.jsonStringify(aggiornaGaraRequest.getSprintRetired()));
+            g.setSprintPenalties(Utility.jsonStringify(aggiornaGaraRequest.getSprintPenalties()));
+        }
+        if (c.isSaveQuali()) g.setQuali(Utility.jsonStringify(aggiornaGaraRequest.getQuali()));
+        g.setRace(Utility.jsonStringify(aggiornaGaraRequest.getRace()));
+        g.setRetired(Utility.jsonStringify(aggiornaGaraRequest.getRetired()));
+        g.setPenalties(Utility.jsonStringify(aggiornaGaraRequest.getPenalties()));
+
+        for (int idPilota : aggiornaGaraRequest.getRace()) {
+            Pilota pilota = pilotaService.getById(idPilota);
+            pilotaService.updateStatistiche(g, aggiornaGaraRequest, pilota);
+        }
+
+        if (g.isSprint()) {
+            for (int idPilota : aggiornaGaraRequest.getSprintRace()) {
+                Pilota pilota = pilotaService.getById(idPilota);
+                pilotaService.updateStatisticheSprint(g, aggiornaGaraRequest, pilota);
+            }
+        }
+
+        if (g.getCampionato().isPolePoint()) {
+            Pilota pilota = pilotaService.getById(aggiornaGaraRequest.getQuali().get(0));
+            pilotaService.updatePunti(pilota, 1);
+            scuderiaService.updatePunti(pilota.getScuderia(), 1);
+        }
+
+        if (g.getCampionato().isFastestLapPoint()) {
+            Pilota pilota = pilotaService.getById(aggiornaGaraRequest.getIdPilotaFastestLap());
+            for (int i = 0; i < g.getCampionato().getMinFastestLapPosition(); i++) {
+                if (aggiornaGaraRequest.getRace().get(i) == pilota.getId()) {
+                    pilotaService.updatePunti(pilota, 1);
+                    scuderiaService.updatePunti(pilota.getScuderia(), 1);
+                }
+            }
+        }
+
+        List<Integer> racePoints = Utility.jsonParseList(g.getCampionato().getPunteggi().getRacePoints());
+        for (int i = 0; i < aggiornaGaraRequest.getRace().size(); i++) {
+            Pilota pilota = pilotaService.getById(aggiornaGaraRequest.getRace().get(i));
+            pilotaService.updatePunti(pilota, racePoints.get(i));
+            scuderiaService.updatePunti(pilota.getScuderia(), racePoints.get(i));
+        }
+
+        if (g.isSprint()) {
+            List<Integer> sprintPoints = Utility.jsonParseList(g.getCampionato().getPunteggi().getSprintPoints());
+            for (int i = 0; i < aggiornaGaraRequest.getSprintRace().size(); i++) {
+                Pilota pilota = pilotaService.getById(aggiornaGaraRequest.getSprintRace().get(i));
+                pilotaService.updatePunti(pilota, sprintPoints.get(i));
+                scuderiaService.updatePunti(pilota.getScuderia(), sprintPoints.get(i));
+            }
         }
     }
 

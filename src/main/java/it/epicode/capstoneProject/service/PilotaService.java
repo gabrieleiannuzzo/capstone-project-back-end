@@ -1,17 +1,24 @@
 package it.epicode.capstoneProject.service;
 
 import it.epicode.capstoneProject.exception.ConflictException;
+import it.epicode.capstoneProject.exception.InternalServerErrorException;
 import it.epicode.capstoneProject.exception.NotFoundException;
 import it.epicode.capstoneProject.exception.UnauthorizedException;
 import it.epicode.capstoneProject.model.entity.*;
 import it.epicode.capstoneProject.model.enums.ActionStatusPilota;
+import it.epicode.capstoneProject.model.request.AggiornaGaraRequest;
 import it.epicode.capstoneProject.model.request.ChangeStatusPilotaRequest;
 import it.epicode.capstoneProject.model.response.CampionatoResponse;
 import it.epicode.capstoneProject.repository.PilotaRepository;
+import it.epicode.capstoneProject.repository.StatisticaSprintUtenteRepository;
+import it.epicode.capstoneProject.repository.StatisticaUtenteRepository;
 import it.epicode.capstoneProject.security.JwtTools;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +27,8 @@ public class PilotaService {
     private final JwtTools jwtTools;
     private final UtenteService utenteService;
     private final ScuderiaService scuderiaService;
+    private final StatisticaUtenteRepository statisticaUtenteRepository;
+    private final StatisticaSprintUtenteRepository statisticaSprintUtenteRepository;
 
     public Pilota getById(int id){
         return pilotaRepository.findById(id).orElseThrow(() -> new NotFoundException("Pilota con id = " + id + " non trovato"));
@@ -148,5 +157,57 @@ public class PilotaService {
         p.setRetired(true);
         pilotaRepository.save(p);
         return CampionatoResponse.createByCampionato(p.getCampionato());
+    }
+
+    public Pilota updatePunti(Pilota pilota, int punti){
+        pilota.setPunti(pilota.getPunti() + punti);
+        return pilotaRepository.save(pilota);
+    }
+
+    @Transactional
+    public void updateStatistiche(Gara gara, AggiornaGaraRequest aggiornaGaraRequest, Pilota pilota){
+        StatisticaUtente statisticaUtente = statisticaUtenteRepository.getByUserId(pilota.getUtente().getId());
+        statisticaUtente.setPosizioneMediaGara(aggiornaMedia(aggiornaGaraRequest.getRace(), pilota, statisticaUtente.getPosizioneMediaGara(), statisticaUtente.getNumeroGareDisputate()));
+        statisticaUtente.setPosizioneMediaQualifica(aggiornaMedia(aggiornaGaraRequest.getQuali(), pilota, statisticaUtente.getPosizioneMediaQualifica(), statisticaUtente.getNumeroGareDisputate()));
+        statisticaUtente.setNumeroGareDisputate(statisticaUtente.getNumeroGareDisputate() + 1);
+        if (isInTop(aggiornaGaraRequest.getRace(), pilota, 1)) statisticaUtente.setNumeroVittorie(statisticaUtente.getNumeroVittorie() + 1);
+        if (isInTop(aggiornaGaraRequest.getQuali(), pilota, 1)) statisticaUtente.setNumeroPolePositions(statisticaUtente.getNumeroPolePositions() + 1);
+        if (isInTop(aggiornaGaraRequest.getRace(), pilota, 3)) statisticaUtente.setPosizionamentiTop3(statisticaUtente.getPosizionamentiTop3() + 1);
+        if (isInTop(aggiornaGaraRequest.getRace(), pilota, 10)) statisticaUtente.setPosizionamentiTop10(statisticaUtente.getPosizionamentiTop10() + 1);
+        if (aggiornaGaraRequest.getRetired().contains(pilota.getId())) statisticaUtente.setNumeroRitiri(statisticaUtente.getNumeroRitiri() + 1);
+        if (aggiornaGaraRequest.getPenalties().contains(pilota.getId())) statisticaUtente.setNumeroPenalita(statisticaUtente.getNumeroPenalita() + 1);
+        statisticaUtenteRepository.save(statisticaUtente);
+    }
+
+    @Transactional
+    public void updateStatisticheSprint(Gara gara, AggiornaGaraRequest aggiornaGaraRequest, Pilota pilota){
+        StatisticaSprintUtente statisticaSprintUtente = statisticaSprintUtenteRepository.getByUserId(pilota.getUtente().getId());
+        statisticaSprintUtente.setPosizioneMediaGara(aggiornaMedia(aggiornaGaraRequest.getSprintRace(), pilota, statisticaSprintUtente.getPosizioneMediaGara(), statisticaSprintUtente.getNumeroSprintDisputate()));
+        statisticaSprintUtente.setNumeroSprintDisputate(statisticaSprintUtente.getNumeroSprintDisputate() + 1);
+        if (isInTop(aggiornaGaraRequest.getSprintRace(), pilota, 1)) statisticaSprintUtente.setNumeroVittorie(statisticaSprintUtente.getNumeroVittorie() + 1);
+        if (isInTop(aggiornaGaraRequest.getSprintRace(), pilota, 3)) statisticaSprintUtente.setPosizionamentiTop3(statisticaSprintUtente.getPosizionamentiTop3() + 1);
+        if (aggiornaGaraRequest.getSprintRetired().contains(pilota.getId())) statisticaSprintUtente.setNumeroRitiri(statisticaSprintUtente.getNumeroRitiri() + 1);
+        if (aggiornaGaraRequest.getSprintPenalties().contains(pilota.getId())) statisticaSprintUtente.setNumeroPenalita(statisticaSprintUtente.getNumeroPenalita() + 1);
+        statisticaSprintUtenteRepository.save(statisticaSprintUtente);
+    }
+
+    public double aggiornaMedia(List<Integer> event, Pilota pilota, double vecchiaMedia, int vecchioNumeroGare){
+        int nuovoValore = 0;
+        for (int i = 0; i < event.size(); i++) {
+            if (event.get(i) == pilota.getId()) {
+                nuovoValore = i + 1;
+                break;
+            }
+        }
+        if (nuovoValore == 0) throw new InternalServerErrorException();
+        double nuovaMedia = ((vecchiaMedia * vecchioNumeroGare) + nuovoValore) / (vecchioNumeroGare + 1);
+        return nuovaMedia;
+    }
+
+    public boolean isInTop(List<Integer> event, Pilota pilota, int position){
+        for (int i = 0; i < position; i++) {
+            if (event.get(i) == pilota.getId()) return true;
+        }
+        return false;
     }
 }

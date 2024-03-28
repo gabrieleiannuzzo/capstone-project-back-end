@@ -14,8 +14,11 @@ public class AggiornaGaraRequest {
     private List<Integer> sprintRetired;
     private List<Integer> sprintPenalties;
     private List<Integer> quali;
+    @NotNull(message = "Inserire risultati gara")
     private List<Integer> race;
+    @NotNull(message = "I ritirati devono essere un array")
     private List<Integer> retired;
+    @NotNull(message = "I penalizzati devono essere un array")
     private List<Integer> penalties;
     private Integer idPilotaFastestLap;
     private List<WildCardPerGaraRequest> wildCards;
