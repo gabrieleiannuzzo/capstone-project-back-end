@@ -19,8 +19,5 @@ public class Runner implements CommandLineRunner {
         String s = objectMapper.writeValueAsString(lista);
 
         List<Integer> li = objectMapper.readValue(s, List.class);
-
-        System.out.println(Utility.jsonStringify(new ArrayList<Integer>()));
-        System.out.println(objectMapper.writeValueAsString(new ArrayList<Integer>()));
     }
 }

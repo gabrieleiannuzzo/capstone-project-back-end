@@ -37,15 +37,6 @@ public class GaraResponse {
             response.setSprint(gara.isSprint());
             if (gara.getFastestLapDriver() != null) response.setIdPilotaGiroVeloce(gara.getFastestLapDriver().getId());
 
-//            if (gara.getSprintQuali() != null) response.setSprintQuali(Utility.jsonParseList(gara.getSprintQuali()));
-//            if (gara.getSprintRace() != null) response.setSprintRace(Utility.jsonParseList(gara.getSprintRace()));
-//            if (gara.getSprintRetired() != null) response.setSprintRetired(Utility.jsonParseList(gara.getSprintRetired()));
-//            if (gara.getSprintPenalties() != null) response.setSprintPenalties(Utility.jsonParseList(gara.getSprintPenalties()));
-//            if (gara.getQuali() != null) response.setQuali(Utility.jsonParseList(gara.getQuali()));
-//            if (gara.getRace() != null) response.setRace(Utility.jsonParseList(gara.getRace()));
-//            if (gara.getRetired() != null) response.setRetired(Utility.jsonParseList(gara.getRetired()));
-//            if (gara.getPenalties() != null) response.setPenalties(Utility.jsonParseList(gara.getPenalties()));
-
             response.setSprintQuali(Utility.jsonParseList(gara.getSprintQuali()));
             response.setSprintRace(Utility.jsonParseList(gara.getSprintRace()));
             response.setSprintRetired(Utility.jsonParseList(gara.getSprintRetired()));
