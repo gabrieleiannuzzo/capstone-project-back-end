@@ -58,7 +58,6 @@ public class GaraResponse {
             gareResponse.add(response);
         }
 
-        gareResponse.sort(Comparator.comparingInt(GaraResponse::getNumeroGara));
         return gareResponse;
     }
 }
