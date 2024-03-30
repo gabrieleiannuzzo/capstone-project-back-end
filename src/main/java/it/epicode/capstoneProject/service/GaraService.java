@@ -26,6 +26,7 @@ public class GaraService {
     private final PilotaService pilotaService;
     private final JwtTools jwtTools;
     private final ScuderiaService scuderiaService;
+    private final WildCardPerGaraService wildCardPerGaraService;
 
     public Gara getById(int id){
         return garaRepository.findById(id).orElseThrow(() -> new NotFoundException("Gara con id = " + id + " non trovata"));
@@ -97,6 +98,8 @@ public class GaraService {
         g.setPenalties(Utility.jsonStringify(aggiornaGaraRequest.getPenalties()));
         if (c.isFastestLapPoint()) g.setFastestLapDriver(pilotaService.getById(aggiornaGaraRequest.getIdPilotaFastestLap()));
 
+        for (WildCardPerGaraRequest w : aggiornaGaraRequest.getWildCards()) wildCardPerGaraService.save(pilotaService.getById(w.getIdWildCard()), scuderiaService.getById(w.getIdScuderia()), g);
+
         for (int idPilota : aggiornaGaraRequest.getRace()) {
             Pilota pilota = pilotaService.getById(idPilota);
             pilotaService.updateStatistiche(g, aggiornaGaraRequest, pilota);
@@ -110,9 +113,9 @@ public class GaraService {
         }
 
         if (g.getCampionato().isPolePoint()) {
-            Pilota pilota = pilotaService.getById(aggiornaGaraRequest.getQuali().get(0));
+            Pilota pilota = pilotaService.getById(aggiornaGaraRequest.getQuali().getFirst());
             pilotaService.updatePunti(pilota, 1);
-            scuderiaService.updatePunti(pilota.getScuderia(), 1);
+            scuderiaService.updatePunti(pilotaService.getScuderiaFromPilotaAndGara(pilota, g), 1);
         }
 
         if (g.getCampionato().isFastestLapPoint()) {
@@ -121,7 +124,7 @@ public class GaraService {
                 if (aggiornaGaraRequest.getRace().size() >= i + 1) {
                     if (aggiornaGaraRequest.getRace().get(i) == pilota.getId()) {
                         pilotaService.updatePunti(pilota, 1);
-                        scuderiaService.updatePunti(pilota.getScuderia(), 1);
+                        scuderiaService.updatePunti(pilotaService.getScuderiaFromPilotaAndGara(pilota, g), 1);
                     }
                 }
             }
@@ -131,7 +134,7 @@ public class GaraService {
         for (int i = 0; i < aggiornaGaraRequest.getRace().size(); i++) {
             Pilota pilota = pilotaService.getById(aggiornaGaraRequest.getRace().get(i));
             pilotaService.updatePunti(pilota, racePoints.get(i));
-            scuderiaService.updatePunti(pilota.getScuderia(), racePoints.get(i));
+            scuderiaService.updatePunti(pilotaService.getScuderiaFromPilotaAndGara(pilota, g), racePoints.get(i));
         }
 
         if (g.isSprint()) {
@@ -139,7 +142,7 @@ public class GaraService {
             for (int i = 0; i < aggiornaGaraRequest.getSprintRace().size(); i++) {
                 Pilota pilota = pilotaService.getById(aggiornaGaraRequest.getSprintRace().get(i));
                 pilotaService.updatePunti(pilota, sprintPoints.get(i));
-                scuderiaService.updatePunti(pilota.getScuderia(), sprintPoints.get(i));
+                scuderiaService.updatePunti(pilotaService.getScuderiaFromPilotaAndGara(pilota, g), sprintPoints.get(i));
             }
         }
     }
@@ -154,11 +157,12 @@ public class GaraService {
 
     public boolean listsContainWildCard(List<List<Integer>> eventi, int idWildCard){
         for (List<Integer> e : eventi) {
-            if (e == null) return false;
-            if (e.isEmpty()) return false;
-            if (!e.contains(idWildCard)) return false;
+            if (e == null) continue;
+            if (e.isEmpty()) continue;
+            if (!e.contains(idWildCard)) continue;
+            return true;
         }
-        return true;
+        return false;
     }
 
     public boolean listsContainRetiredDrivers(List<List<Integer>> eventi, Campionato c){

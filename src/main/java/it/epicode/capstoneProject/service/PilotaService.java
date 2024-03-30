@@ -29,6 +29,7 @@ public class PilotaService {
     private final ScuderiaService scuderiaService;
     private final StatisticaUtenteRepository statisticaUtenteRepository;
     private final StatisticaSprintUtenteRepository statisticaSprintUtenteRepository;
+    private final WildCardPerGaraService wildCardPerGaraService;
 
     public Pilota getById(int id){
         return pilotaRepository.findById(id).orElseThrow(() -> new NotFoundException("Pilota con id = " + id + " non trovato"));
@@ -211,5 +212,10 @@ public class PilotaService {
             if (event.get(i) == pilota.getId()) return true;
         }
         return false;
+    }
+
+    public Scuderia getScuderiaFromPilotaAndGara(Pilota p, Gara g){
+        if (!p.isWildCard()) return p.getScuderia();
+        return wildCardPerGaraService.getByIdPilotaAndIdGara(p.getId(), g.getId()).getScuderia();
     }
 }
