@@ -19,6 +19,7 @@ public class PunteggioService {
     public Punteggio save(PunteggioRequest punteggioRequest, Campionato campionato){
         ObjectMapper objectMapper = new ObjectMapper();
         Punteggio punteggio = new Punteggio();
+        for (int i = 0; i < 10; i++) punteggioRequest.getSprintPoints().add(0);
         try {
             punteggio.setSprintPoints(objectMapper.writeValueAsString(punteggioRequest.getSprintPoints()));
             punteggio.setRacePoints(objectMapper.writeValueAsString(punteggioRequest.getRacePoints()));

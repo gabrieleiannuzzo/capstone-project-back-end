@@ -16,14 +16,14 @@ public class GaraResponse {
     private String nome;
     private int numeroGara;
     private boolean sprint;
-    private List<Integer> sprintQuali;
-    private List<Integer> sprintRace;
-    private List<Integer> sprintRetired;
-    private List<Integer> sprintPenalties;
-    private List<Integer> quali;
-    private List<Integer> race;
-    private List<Integer> retired;
-    private List<Integer> penalties;
+    private List<Object> sprintQuali;
+    private List<Object> sprintRace;
+    private List<Object> sprintRetired;
+    private List<Object> sprintPenalties;
+    private List<Object> quali;
+    private List<Object> race;
+    private List<Object> retired;
+    private List<Object> penalties;
     private int idPilotaGiroVeloce;
 
     public static List<GaraResponse> createFromGaraList(List<Gara> gare){
