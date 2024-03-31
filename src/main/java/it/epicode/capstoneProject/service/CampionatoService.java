@@ -36,8 +36,11 @@ public class CampionatoService {
         return campionatoRepository.findById(id).orElseThrow(() -> new NotFoundException("Campionato con id = " + id + " non trovato"));
     }
 
-    public List<Campionato> getByCreatorUsername(String username){
-        return campionatoRepository.getByCreatorUsername(username);
+    public List<CampionatoResponse> getByCreatorUsername(String username){
+        List<Campionato> campionati = campionatoRepository.getByCreatorUsername(username);
+        List<CampionatoResponse> response = new ArrayList<>();
+        for (Campionato c : campionati) response.add(CampionatoResponse.createByCampionato(c));
+        return response;
     }
 
     public CampionatoResponse getCampionatoResponseById(int id) throws NotFoundException{
