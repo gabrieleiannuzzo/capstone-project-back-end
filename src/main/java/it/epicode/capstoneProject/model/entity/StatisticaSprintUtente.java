@@ -21,6 +21,8 @@ public class StatisticaSprintUtente {
     private int numeroRitiri;
     private int numeroPenalita;
 
+    public StatisticaSprintUtente(){}
+
     public StatisticaSprintUtente(Utente utente){
         this.utente = utente;
         numeroSprintDisputate = 0;

@@ -35,6 +35,10 @@ public class PilotaService {
         return pilotaRepository.findById(id).orElseThrow(() -> new NotFoundException("Pilota con id = " + id + " non trovato"));
     }
 
+    public List<Pilota> getByUtente(Utente u){
+        return pilotaRepository.getByUtente(u);
+    }
+
     public void setPilotaTitolareDaInvito(Utente u, Campionato c, Scuderia s){
         Pilota p = new Pilota();
         p.setUtente(u);
