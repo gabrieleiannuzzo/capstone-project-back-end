@@ -6,11 +6,15 @@ import it.epicode.capstoneProject.exception.NotFoundException;
 import it.epicode.capstoneProject.exception.UnauthorizedException;
 import it.epicode.capstoneProject.model.classes.Utility;
 import it.epicode.capstoneProject.model.entity.CodiceRecuperaPassword;
+import it.epicode.capstoneProject.model.entity.StatisticaSprintUtente;
+import it.epicode.capstoneProject.model.entity.StatisticaUtente;
 import it.epicode.capstoneProject.model.entity.Utente;
 import it.epicode.capstoneProject.model.enums.Ruolo;
 import it.epicode.capstoneProject.model.request.*;
 import it.epicode.capstoneProject.model.response.LoginResponse;
 import it.epicode.capstoneProject.model.response.UtenteResponse;
+import it.epicode.capstoneProject.repository.StatisticaSprintUtenteRepository;
+import it.epicode.capstoneProject.repository.StatisticaUtenteRepository;
 import it.epicode.capstoneProject.repository.UtenteRepository;
 import it.epicode.capstoneProject.security.JwtTools;
 import jakarta.transaction.Transactional;
@@ -31,6 +35,8 @@ public class UtenteService {
     private final JavaMailSenderImpl javaMailSender;
     private final JwtTools jwtTools;
     private final CodiceRecuperaPasswordService codiceRecuperaPasswordService;
+    private final StatisticaUtenteRepository statisticaUtenteRepository;
+    private final StatisticaSprintUtenteRepository statisticaSprintUtenteRepository;
 
     public List<Utente> getAll(){
         return utenteRepository.findAll();
@@ -79,6 +85,12 @@ public class UtenteService {
         utente.setDataCreazione(LocalDateTime.now());
         utente.setVerificato(false);
         utenteRepository.save(utente);
+
+        StatisticaUtente s = new StatisticaUtente(utente);
+        statisticaUtenteRepository.save(s);
+
+        StatisticaSprintUtente ss = new StatisticaSprintUtente(utente);
+        statisticaSprintUtenteRepository.save(ss);
 
         String emailText = Utility.readFile("./email-registrazione.html");
         Utility.sendEmail(javaMailSender, utente.getEmail(), "Registrazione avvenuta con successo", emailText, true);

@@ -25,4 +25,9 @@ public class ScuderiaService {
         scuderia.setPunti(0);
         return scuderiaRepository.save(scuderia);
     }
+
+    public Scuderia updatePunti(Scuderia scuderia, int punti){
+        scuderia.setPunti(scuderia.getPunti() + punti);
+        return scuderiaRepository.save(scuderia);
+    }
 }
