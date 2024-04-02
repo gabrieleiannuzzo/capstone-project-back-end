@@ -34,6 +34,13 @@ public class InvitoService {
         return invitoRepository.findById(id).orElseThrow(() -> new NotFoundException("Invito con id = " + id + " non trovato"));
     }
 
+    public InvitoResponse getInvitoResponseById(int id, HttpServletRequest request){
+        Invito i = getById(id);
+        if (!i.getToUser().getUsername().equals(jwtTools.extractUsernameFromAuthorizationHeader(request))) throw new UnauthorizedException("Non sei autorizzato a gestire questo invito");
+        if (i.getUpdatedAt() != null) throw new ConflictException("L'invito è già stato gestito");
+        return InvitoResponse.createFromInvito(i);
+    }
+
     public List<InvitoResponse> getInvitiRicevuti(String username){
         Utente toUser = utenteService.getByUsername(username);
         List<Invito> inviti = invitoRepository.getByToUserAndUpdatedAtIsNull(toUser);
@@ -45,7 +52,7 @@ public class InvitoService {
     public void save(InvitoRequest invitoRequest, HttpServletRequest request){
         Utente fromUser = utenteService.getByUsername(jwtTools.extractUsernameFromAuthorizationHeader(request));
         Campionato campionato = campionatoService.getById(invitoRequest.getIdCampionato());
-        if (!campionato.isRealDrivers()) throw new ConflictException("Il campionato non prevede piloti reali");
+        if (!campionato.isRealDrivers() && invitoRequest.getRuoloInvito() != RuoloInvito.ADMIN) throw new ConflictException("Il campionato non prevede piloti reali");
         if (campionato.getCreator().getId() != fromUser.getId() || checkIdInAdminsList(fromUser.getUsername(), campionato.getAdmins())) throw new UnauthorizedException("Non puoi inviare inviti per questo campionato");
         if (fromUser.getUsername().equals(invitoRequest.getToUserUsername())) throw new ConflictException("Non puoi invitare te stesso");
         if (invitoRequest.getRuoloInvito() == RuoloInvito.ADMIN && checkIdInAdminsList(invitoRequest.getToUserUsername(), campionato.getAdmins())) throw new ConflictException("L'utente selezionato è già un admin");
