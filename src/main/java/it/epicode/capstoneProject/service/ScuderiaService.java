@@ -30,4 +30,8 @@ public class ScuderiaService {
         scuderia.setPunti(scuderia.getPunti() + punti);
         return scuderiaRepository.save(scuderia);
     }
+
+    public void deleteAll(){
+        scuderiaRepository.deleteAll();
+    }
 }

@@ -170,7 +170,7 @@ public class PilotaService {
     }
 
     @Transactional
-    public void updateStatistiche(Gara gara, AggiornaGaraRequest aggiornaGaraRequest, Pilota pilota){
+    public void updateStatistiche(AggiornaGaraRequest aggiornaGaraRequest, Pilota pilota){
         if (pilota.getUtente() == null) return;
         StatisticaUtente statisticaUtente = statisticaUtenteRepository.getByUserId(pilota.getUtente().getId());
         statisticaUtente.setPosizioneMediaGara(aggiornaMedia(aggiornaGaraRequest.getRace(), pilota, statisticaUtente.getPosizioneMediaGara(), statisticaUtente.getNumeroGareDisputate()));
@@ -186,7 +186,7 @@ public class PilotaService {
     }
 
     @Transactional
-    public void updateStatisticheSprint(Gara gara, AggiornaGaraRequest aggiornaGaraRequest, Pilota pilota){
+    public void updateStatisticheSprint(AggiornaGaraRequest aggiornaGaraRequest, Pilota pilota){
         if (pilota.getUtente() == null) return;
         StatisticaSprintUtente statisticaSprintUtente = statisticaSprintUtenteRepository.getByUserId(pilota.getUtente().getId());
         statisticaSprintUtente.setPosizioneMediaGara(aggiornaMedia(aggiornaGaraRequest.getSprintRace(), pilota, statisticaSprintUtente.getPosizioneMediaGara(), statisticaSprintUtente.getNumeroSprintDisputate()));
@@ -208,7 +208,8 @@ public class PilotaService {
         }
         if (nuovoValore == 0) throw new InternalServerErrorException();
         double nuovaMedia = ((vecchiaMedia * vecchioNumeroGare) + nuovoValore) / (vecchioNumeroGare + 1);
-        return nuovaMedia;
+        int cifreDecimali = 2;
+        return Math.round(nuovaMedia * Math.pow(10, cifreDecimali)) / Math.pow(10, cifreDecimali);
     }
 
     public boolean isInTop(List<Integer> event, Pilota pilota, int position){
@@ -221,5 +222,9 @@ public class PilotaService {
     public Scuderia getScuderiaFromPilotaAndGara(Pilota p, Gara g){
         if (!p.isWildCard()) return p.getScuderia();
         return wildCardPerGaraService.getByIdPilotaAndIdGara(p.getId(), g.getId()).getScuderia();
+    }
+
+    public void deleteAll(){
+        pilotaRepository.deleteAll();
     }
 }

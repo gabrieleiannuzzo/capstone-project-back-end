@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -98,17 +99,49 @@ public class GaraService {
         g.setPenalties(Utility.jsonStringify(aggiornaGaraRequest.getPenalties()));
         if (c.isFastestLapPoint()) g.setFastestLapDriver(pilotaService.getById(aggiornaGaraRequest.getIdPilotaFastestLap()));
 
+//        // INSERIMENTO PILOTI IN SCUDERIE_PER_GARA
+//        List<Object> idPilotiList = new ArrayList<>();
+//        for (Object o : aggiornaGaraRequest.getRace()) {
+//            if (!idPilotiList.contains(o)) idPilotiList.add(o);
+//        }
+//        if (c.isSaveQuali() || c.isPolePoint()) {
+//            for (Object o : aggiornaGaraRequest.getQuali()) {
+//                if (!idPilotiList.contains(o)) idPilotiList.add(o);
+//            }
+//        }
+//        if (g.isSprint()) {
+//            for (Object o : aggiornaGaraRequest.getSprintRace()) {
+//                if (!idPilotiList.contains(o)) idPilotiList.add(o);
+//            }
+//            if (c.isSaveQuali() && c.isIndependentSprint()) {
+//                for (Object o : aggiornaGaraRequest.getSprintQuali()) {
+//                    if (!idPilotiList.contains(o)) idPilotiList.add(o);
+//                }
+//            }
+//        }
+//
+//        for (Object o : idPilotiList) {
+//            int idPilota = (Integer) o;
+//            Pilota p = pilotaService.getById(idPilota);
+//            if (p.isWildCard()) {
+//                int idScuderia = aggiornaGaraRequest.getWildCards().stream().filter(w -> w.getIdWildCard() == idPilota).toList().get(0).getIdScuderia();
+//                wildCardPerGaraService.save(p, scuderiaService.getById(idScuderia), g);
+//            } else {
+//                wildCardPerGaraService.save(p, p.getScuderia(), g);
+//            }
+//        }
+
         for (WildCardPerGaraRequest w : aggiornaGaraRequest.getWildCards()) wildCardPerGaraService.save(pilotaService.getById(w.getIdWildCard()), scuderiaService.getById(w.getIdScuderia()), g);
 
         for (int idPilota : aggiornaGaraRequest.getRace()) {
             Pilota pilota = pilotaService.getById(idPilota);
-            pilotaService.updateStatistiche(g, aggiornaGaraRequest, pilota);
+            pilotaService.updateStatistiche(aggiornaGaraRequest, pilota);
         }
 
         if (g.isSprint()) {
             for (int idPilota : aggiornaGaraRequest.getSprintRace()) {
                 Pilota pilota = pilotaService.getById(idPilota);
-                pilotaService.updateStatisticheSprint(g, aggiornaGaraRequest, pilota);
+                pilotaService.updateStatisticheSprint(aggiornaGaraRequest, pilota);
             }
         }
 
@@ -202,5 +235,9 @@ public class GaraService {
             if (!evento.contains(p)) return false;
         }
         return true;
+    }
+
+    public void deleteAll(){
+        garaRepository.deleteAll();
     }
 }

@@ -108,4 +108,8 @@ public class CampionatoService {
         campionato.setPiloti(new ArrayList<>());
         return CampionatoResponse.createByCampionato(campionato);
     }
+
+    public void deleteAll(){
+        campionatoRepository.deleteAll();
+    }
 }
