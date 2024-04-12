@@ -3,6 +3,10 @@ package it.epicode.capstoneProject.model.classes;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.epicode.capstoneProject.exception.InternalServerErrorException;
+import it.epicode.capstoneProject.exception.UnauthorizedException;
+import it.epicode.capstoneProject.model.entity.Admin;
+import it.epicode.capstoneProject.model.entity.Campionato;
+import it.epicode.capstoneProject.model.entity.Utente;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.apache.commons.io.FileUtils;
@@ -31,7 +35,7 @@ public class Utility {
             helper.setText(text, htmlText);
             javaMailSender.send(message);
         } catch (MessagingException e){
-            throw new InternalServerErrorException("Bro");
+            throw new InternalServerErrorException();
         }
     }
 
@@ -41,7 +45,7 @@ public class Utility {
         try {
             text = FileUtils.readFileToString(file, Charset.defaultCharset());
         } catch (IOException e){
-            throw new InternalServerErrorException("Si è verificato un errore");
+            throw new InternalServerErrorException();
         }
         return text;
     }
@@ -49,7 +53,7 @@ public class Utility {
     public static String jsonStringify(Object object){
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            return objectMapper.writeValueAsString(objectMapper);
+            return objectMapper.writeValueAsString(object);
         } catch (JsonProcessingException e){
             throw new InternalServerErrorException();
         }
@@ -62,5 +66,15 @@ public class Utility {
         } catch (JsonProcessingException e){
             throw new InternalServerErrorException();
         }
+    }
+
+    public static void isUserAuthorizedToChampionship(Campionato c, Utente u, String msg){
+        if (u.getId() == c.getCreator().getId()) return;
+
+        for (Admin a : c.getAdmins()) {
+            if (a.getId() == u.getId()) return;
+        }
+
+        throw new UnauthorizedException(msg);
     }
 }

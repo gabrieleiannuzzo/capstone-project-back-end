@@ -11,6 +11,7 @@ public class UtenteResponse {
     private String email;
     private boolean verificato;
     private String dataCreazione;
+    private String urlFotoProfilo;
 
     public static UtenteResponse createFromUtente(Utente utente){
         UtenteResponse utenteResponse = new UtenteResponse();
@@ -19,6 +20,7 @@ public class UtenteResponse {
         utenteResponse.setEmail(utente.getEmail());
         utenteResponse.setVerificato(utenteResponse.isVerificato());
         utenteResponse.setDataCreazione(Utility.convertDate(utente.getDataCreazione()));
+        utenteResponse.setUrlFotoProfilo(utente.getUrlFotoProfilo());
         return utenteResponse;
     }
 }

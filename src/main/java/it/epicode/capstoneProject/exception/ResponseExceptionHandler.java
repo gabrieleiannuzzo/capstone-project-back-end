@@ -1,7 +1,6 @@
 package it.epicode.capstoneProject.exception;
 
 import it.epicode.capstoneProject.model.response.ErrorResponse;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -36,6 +35,7 @@ public class ResponseExceptionHandler {
     @ExceptionHandler(InternalServerErrorException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse internalServerErrorExceptionHandler(InternalServerErrorException e){
+        e.printStackTrace();
         return new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
     }
 
@@ -44,6 +44,6 @@ public class ResponseExceptionHandler {
     public ErrorResponse exceptionHandler(Exception e){
         // AGGIUNGERE LOG
         e.printStackTrace();
-        return new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getClass().toString());
+        return new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
     }
 }
