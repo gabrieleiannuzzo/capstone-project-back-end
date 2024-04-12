@@ -59,6 +59,14 @@ public class CampionatoService {
         return c;
     }
 
+    public List<CampionatoResponse> getByPartialNome(String partialNome){
+        List<Campionato> campionati = campionatoRepository.getByNomeContainingIgnoreCase(partialNome);
+        List<CampionatoResponse> response = new ArrayList<>();
+
+        for (Campionato c : campionati) response.add(CampionatoResponse.createByCampionato(c));
+        return response;
+    }
+
     public List<Object> getListByIdsList(List<Object> e, int idGara){
         return e.stream().map(p -> {
             PilotaResponse pilotaResponse = PilotaResponse.createByPilota(pilotaService.getById(Integer.parseInt(p.toString())));
