@@ -206,13 +206,14 @@ public class PilotaService {
                 break;
             }
         }
-        if (nuovoValore == 0) throw new InternalServerErrorException();
+        if (event.contains(pilota.getId()) && nuovoValore == 0) throw new InternalServerErrorException();
         double nuovaMedia = ((vecchiaMedia * vecchioNumeroGare) + nuovoValore) / (vecchioNumeroGare + 1);
         int cifreDecimali = 2;
         return Math.round(nuovaMedia * Math.pow(10, cifreDecimali)) / Math.pow(10, cifreDecimali);
     }
 
     public boolean isInTop(List<Integer> event, Pilota pilota, int position){
+        if (event.size() < position) position = event.size();
         for (int i = 0; i < position; i++) {
             if (event.get(i) == pilota.getId()) return true;
         }

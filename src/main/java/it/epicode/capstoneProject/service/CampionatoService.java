@@ -62,7 +62,7 @@ public class CampionatoService {
     public List<Object> getListByIdsList(List<Object> e, int idGara){
         return e.stream().map(p -> {
             PilotaResponse pilotaResponse = PilotaResponse.createByPilota(pilotaService.getById(Integer.parseInt(p.toString())));
-            if (pilotaResponse.isWildCard() || pilotaResponse.isRetired()) pilotaResponse.setScuderia(ScuderiaResponse.createFromScuderia(wildCardPerGaraService.getByIdPilotaAndIdGara(Integer.parseInt(p.toString()), idGara).getScuderia()));
+            pilotaResponse.setScuderia(ScuderiaResponse.createFromScuderia(wildCardPerGaraService.getByIdPilotaAndIdGara(Integer.parseInt(p.toString()), idGara).getScuderia()));
             return (Object) pilotaResponse;
         }).toList();
     }
