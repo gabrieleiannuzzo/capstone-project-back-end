@@ -54,7 +54,7 @@ public class CampionatoResponse {
         List<CampionatoUtenteResponse> admins = new ArrayList<>();
         for (Admin a : campionato.getAdmins()) {
             CampionatoUtenteResponse c = new CampionatoUtenteResponse();
-            c.setId(a.getId());
+            c.setId(a.getUtente().getId());
             c.setUsername(a.getUtente().getUsername());
             c.setUrlFotoProfilo(a.getUtente().getUrlFotoProfilo());
             admins.add(c);

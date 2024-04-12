@@ -31,6 +31,11 @@ public class CampionatoController {
         return new SuccessResponse(campionatoService.getCampionatoResponseById(id));
     }
 
+    @GetMapping("/partialNome/{partialNome}")
+    public SuccessResponse getByPartialNome(@PathVariable String partialNome){
+        return new SuccessResponse(campionatoService.getByPartialNome(partialNome));
+    }
+
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
     public SuccessResponse save(@RequestBody @Validated CampionatoRequest campionatoRequest, BindingResult bindingResult, HttpServletRequest request){

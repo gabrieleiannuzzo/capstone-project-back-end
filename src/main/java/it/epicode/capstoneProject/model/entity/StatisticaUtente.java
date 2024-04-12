@@ -24,6 +24,8 @@ public class StatisticaUtente {
     private int numeroRitiri;
     private int numeroPenalita;
 
+    public StatisticaUtente(){}
+
     public StatisticaUtente(Utente utente){
         this.utente = utente;
         numeroGareDisputate = 0;

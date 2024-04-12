@@ -24,4 +24,8 @@ public class WildCardPerGaraService {
         w.setGara(g);
         return wildCardPerGaraRepository.save(w);
     }
+
+    public void deleteAll(){
+        wildCardPerGaraRepository.deleteAll();
+    }
 }

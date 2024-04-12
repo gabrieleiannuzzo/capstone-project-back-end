@@ -18,4 +18,8 @@ public class AdminService {
         a.setCampionato(c);
         adminRepository.save(a);
     }
+
+    public void deleteAll(){
+        adminRepository.deleteAll();
+    }
 }

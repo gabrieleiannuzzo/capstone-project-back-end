@@ -29,4 +29,8 @@ public class PunteggioService {
         punteggio.setCampionato(campionato);
         return punteggioRepository.save(punteggio);
     }
+
+    public void deleteAll(){
+        punteggioRepository.deleteAll();
+    }
 }

@@ -35,7 +35,7 @@ public class Utility {
             helper.setText(text, htmlText);
             javaMailSender.send(message);
         } catch (MessagingException e){
-            throw new InternalServerErrorException("Bro");
+            throw new InternalServerErrorException();
         }
     }
 
@@ -45,7 +45,7 @@ public class Utility {
         try {
             text = FileUtils.readFileToString(file, Charset.defaultCharset());
         } catch (IOException e){
-            throw new InternalServerErrorException("Si è verificato un errore");
+            throw new InternalServerErrorException();
         }
         return text;
     }

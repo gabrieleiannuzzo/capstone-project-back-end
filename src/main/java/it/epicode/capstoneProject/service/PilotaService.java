@@ -35,6 +35,10 @@ public class PilotaService {
         return pilotaRepository.findById(id).orElseThrow(() -> new NotFoundException("Pilota con id = " + id + " non trovato"));
     }
 
+    public List<Pilota> getByUtente(Utente u){
+        return pilotaRepository.getByUtente(u);
+    }
+
     public void setPilotaTitolareDaInvito(Utente u, Campionato c, Scuderia s){
         Pilota p = new Pilota();
         p.setUtente(u);
@@ -166,7 +170,7 @@ public class PilotaService {
     }
 
     @Transactional
-    public void updateStatistiche(Gara gara, AggiornaGaraRequest aggiornaGaraRequest, Pilota pilota){
+    public void updateStatistiche(AggiornaGaraRequest aggiornaGaraRequest, Pilota pilota){
         if (pilota.getUtente() == null) return;
         StatisticaUtente statisticaUtente = statisticaUtenteRepository.getByUserId(pilota.getUtente().getId());
         statisticaUtente.setPosizioneMediaGara(aggiornaMedia(aggiornaGaraRequest.getRace(), pilota, statisticaUtente.getPosizioneMediaGara(), statisticaUtente.getNumeroGareDisputate()));
@@ -182,7 +186,7 @@ public class PilotaService {
     }
 
     @Transactional
-    public void updateStatisticheSprint(Gara gara, AggiornaGaraRequest aggiornaGaraRequest, Pilota pilota){
+    public void updateStatisticheSprint(AggiornaGaraRequest aggiornaGaraRequest, Pilota pilota){
         if (pilota.getUtente() == null) return;
         StatisticaSprintUtente statisticaSprintUtente = statisticaSprintUtenteRepository.getByUserId(pilota.getUtente().getId());
         statisticaSprintUtente.setPosizioneMediaGara(aggiornaMedia(aggiornaGaraRequest.getSprintRace(), pilota, statisticaSprintUtente.getPosizioneMediaGara(), statisticaSprintUtente.getNumeroSprintDisputate()));
@@ -202,12 +206,14 @@ public class PilotaService {
                 break;
             }
         }
-        if (nuovoValore == 0) throw new InternalServerErrorException();
+        if (event.contains(pilota.getId()) && nuovoValore == 0) throw new InternalServerErrorException();
         double nuovaMedia = ((vecchiaMedia * vecchioNumeroGare) + nuovoValore) / (vecchioNumeroGare + 1);
-        return nuovaMedia;
+        int cifreDecimali = 2;
+        return Math.round(nuovaMedia * Math.pow(10, cifreDecimali)) / Math.pow(10, cifreDecimali);
     }
 
     public boolean isInTop(List<Integer> event, Pilota pilota, int position){
+        if (event.size() < position) position = event.size();
         for (int i = 0; i < position; i++) {
             if (event.get(i) == pilota.getId()) return true;
         }
@@ -217,5 +223,9 @@ public class PilotaService {
     public Scuderia getScuderiaFromPilotaAndGara(Pilota p, Gara g){
         if (!p.isWildCard()) return p.getScuderia();
         return wildCardPerGaraService.getByIdPilotaAndIdGara(p.getId(), g.getId()).getScuderia();
+    }
+
+    public void deleteAll(){
+        pilotaRepository.deleteAll();
     }
 }
