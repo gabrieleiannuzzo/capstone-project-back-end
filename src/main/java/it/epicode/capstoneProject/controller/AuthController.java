@@ -46,7 +46,7 @@ public class AuthController {
         return new SuccessResponse();
     }
 
-    @PutMapping("/{username}/update-username")
+    @PutMapping("/{username}/update-username")//
     public SuccessResponse updateUsername(@PathVariable String username, @RequestBody @Validated UpdateUsernameRequest updateUsernameRequest, BindingResult bindingResult, HttpServletRequest request){
         ErrorResponse.checkRequestBody(bindingResult);
         if (!jwtTools.extractUsernameFromAuthorizationHeader(request).equals(username)) throw new UnauthorizedException("Non puoi modificare questo username");
