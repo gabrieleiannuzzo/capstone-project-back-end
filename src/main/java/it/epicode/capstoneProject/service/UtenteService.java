@@ -76,12 +76,14 @@ public class UtenteService {
         if (utenteByUsername != null && utenteByEmail != null) throw new ConflictException("Username e email già in uso");
         if (utenteByUsername != null) throw new ConflictException("Username già in uso");
         if (utenteByEmail != null) throw new ConflictException("Email già in uso");
+        if (utenteRequest.getUsername().toLowerCase().equals("racehub") && !utenteRequest.getUsername().equals("Racehub")) throw new UnauthorizedException("Non puoi utilizzare questo nome");
 
         Utente utente = new Utente();
         utente.setUsername(utenteRequest.getUsername().trim());
         utente.setEmail(utenteRequest.getEmail().trim());
         utente.setPassword(encoder.encode(utenteRequest.getPassword()));
         utente.setRuolo(Ruolo.USER);
+        if (utente.getUsername().equals("Racehub")) utente.setRuolo(Ruolo.ADMIN);
         utente.setDataCreazione(LocalDateTime.now());
         utente.setVerificato(false);
         utenteRepository.save(utente);
@@ -92,8 +94,8 @@ public class UtenteService {
         StatisticaSprintUtente ss = new StatisticaSprintUtente(utente);
         statisticaSprintUtenteRepository.save(ss);
 
-        String emailText = Utility.readFile("./email-registrazione.html");
-        Utility.sendEmail(javaMailSender, utente.getEmail(), "Registrazione avvenuta con successo", emailText, true);
+//        String emailText = Utility.readFile("./email-registrazione.html");
+//        Utility.sendEmail(javaMailSender, utente.getEmail(), "Registrazione avvenuta con successo", emailText, true);
 
         return UtenteResponse.createFromUtente(utente);
     }

@@ -1,11 +1,15 @@
 package it.epicode.capstoneProject.controller;
 
+import it.epicode.capstoneProject.model.request.UpdateUsernameRequest;
+import it.epicode.capstoneProject.model.response.ErrorResponse;
 import it.epicode.capstoneProject.model.response.SuccessResponse;
 import it.epicode.capstoneProject.service.InvitoService;
 import it.epicode.capstoneProject.service.ProfiloUtenteResponseService;
 import it.epicode.capstoneProject.service.UtenteService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
