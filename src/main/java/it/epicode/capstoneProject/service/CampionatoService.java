@@ -87,7 +87,11 @@ public class CampionatoService {
         for (Campionato c : campionatiByUtente) {
             if (c.getNome().equals(campionatoRequest.getNome().trim())) throw new ConflictException("Hai già creato un campionato con questo nome");
         }
-        System.out.println(campionatoRequest);
+        if (campionatoRequest.getScuderie().size() != 10) throw new ConflictException("Le scuderie devono essere 10");
+        for (ScuderiaRequest s : campionatoRequest.getScuderie()) {
+            if (campionatoRequest.getScuderie().stream().filter(scuderia -> scuderia.getNome().equals(s.getNome())).toList().size() > 1) throw new ConflictException("Non puoi creare due scuderie con lo stesso nome");
+        }
+        if (campionatoRequest.getGare().size() < 2 || campionatoRequest.getGare().size() > 24) throw new ConflictException("Numero di gare non valido");
 
         Campionato campionato = new Campionato();
         campionato.setNome(campionatoRequest.getNome().trim());

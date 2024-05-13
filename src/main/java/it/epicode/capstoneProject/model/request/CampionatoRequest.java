@@ -11,8 +11,6 @@ import java.util.List;
 @Data
 public class CampionatoRequest {
     // CONTROLLO SU POSIZIONE GIRO VELOCE SE SELEZIONATO
-    // CONTROLLO SU NUMERO DI SCUDERIE (10) E NUMERO DI GARE (2 - 24)
-    // CONTROLLO SU SCUDERIE CON NOMI DUPLICATI
     @NotNull(message = "Nome campionato obbligatorio")
     @Pattern(regexp = "^(?=.*[a-zA-ZÀ-ÿ])[a-zA-ZÀ-ÿ0-9_.,&@*%!?\\[\\]\\(\\)\\$#\\-+\\s]{4,50}$", message = "Nome campionato non valido")
     private String nome;
