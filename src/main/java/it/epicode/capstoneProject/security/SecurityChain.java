@@ -31,6 +31,7 @@ public class SecurityChain {
         httpSecurity.authorizeHttpRequests(request -> request.requestMatchers("/utenti/**").permitAll());
         httpSecurity.authorizeHttpRequests(request -> request.requestMatchers("/campionati/**").permitAll());
         httpSecurity.authorizeHttpRequests(request -> request.requestMatchers("/inviti/**").permitAll());
+        httpSecurity.authorizeHttpRequests(request -> request.requestMatchers("/email/**").permitAll());
 
         return httpSecurity.build();
     }
