@@ -225,6 +225,10 @@ public class PilotaService {
         return wildCardPerGaraService.getByIdPilotaAndIdGara(p.getId(), g.getId()).getScuderia();
     }
 
+    public void delete(Pilota p){
+        pilotaRepository.delete(p);
+    }
+
     public void deleteAll(){
         pilotaRepository.deleteAll();
     }

@@ -235,6 +235,11 @@ public class GaraService {
         return true;
     }
 
+    public void deleteById(int id){
+        Gara g = getById(id);
+        garaRepository.delete(g);
+    }
+
     public void deleteAll(){
         garaRepository.deleteAll();
     }

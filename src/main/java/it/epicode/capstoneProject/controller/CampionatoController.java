@@ -72,4 +72,11 @@ public class CampionatoController {
         garaService.aggiornaGara(aggiornaGaraRequest, request);
         return new SuccessResponse(HttpStatus.CREATED.value(), null);
     }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public SuccessResponse deleteById(@PathVariable int id, HttpServletRequest request){
+        campionatoService.deleteById(id, request);
+        return new SuccessResponse(HttpStatus.NO_CONTENT.value(), null);
+    }
 }

@@ -2,6 +2,7 @@ package it.epicode.capstoneProject.service;
 
 import it.epicode.capstoneProject.exception.ConflictException;
 import it.epicode.capstoneProject.exception.NotFoundException;
+import it.epicode.capstoneProject.exception.UnauthorizedException;
 import it.epicode.capstoneProject.model.entity.*;
 import it.epicode.capstoneProject.model.request.CampionatoRequest;
 import it.epicode.capstoneProject.model.request.GaraRequest;
@@ -11,6 +12,7 @@ import it.epicode.capstoneProject.model.response.GaraResponse;
 import it.epicode.capstoneProject.model.response.PilotaResponse;
 import it.epicode.capstoneProject.model.response.ScuderiaResponse;
 import it.epicode.capstoneProject.repository.CampionatoRepository;
+import it.epicode.capstoneProject.repository.InvitoRepository;
 import it.epicode.capstoneProject.security.JwtTools;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
@@ -31,6 +33,8 @@ public class CampionatoService {
     private final JwtTools jwtTools;
     private final PilotaService pilotaService;
     private final WildCardPerGaraService wildCardPerGaraService;
+    private final AdminService adminService;
+    private final InvitoRepository invitoRepository;
 
     public Campionato getById(int id){
         return campionatoRepository.findById(id).orElseThrow(() -> new NotFoundException("Campionato con id = " + id + " non trovato"));
@@ -119,6 +123,21 @@ public class CampionatoService {
         campionato.setAdmins(new ArrayList<>());
         campionato.setPiloti(new ArrayList<>());
         return CampionatoResponse.createByCampionato(campionato);
+    }
+
+    @Transactional
+    public void deleteById(int id, HttpServletRequest request){
+        Utente u = utenteService.getByUsername(jwtTools.extractUsernameFromAuthorizationHeader(request));
+        Campionato c = getById(id);
+        if (c.getCreator().getId() != u.getId() || c.getAdmins().stream().noneMatch(a -> a.getUtente().getId() != u.getId())) throw new UnauthorizedException("Non puoi eliminare questo campionato");
+
+        for (Admin a : c.getAdmins()) adminService.deleteById(a.getId());
+        for (Gara g : c.getGare()) garaService.deleteById(g.getId());
+        for (Invito i : c.getInviti()) invitoRepository.delete(i);
+        punteggioService.delete(c.getPunteggi());
+        for (Pilota p : c.getPiloti()) pilotaService.delete(p);
+        for (Scuderia s : c.getScuderie()) scuderiaService.delete(s);
+        campionatoRepository.delete(c);
     }
 
     public void deleteAll(){

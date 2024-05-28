@@ -30,6 +30,10 @@ public class PunteggioService {
         return punteggioRepository.save(punteggio);
     }
 
+    public void delete(Punteggio p){
+        punteggioRepository.delete(p);
+    }
+
     public void deleteAll(){
         punteggioRepository.deleteAll();
     }

@@ -31,6 +31,10 @@ public class ScuderiaService {
         return scuderiaRepository.save(scuderia);
     }
 
+    public void delete(Scuderia s){
+        scuderiaRepository.delete(s);
+    }
+
     public void deleteAll(){
         scuderiaRepository.deleteAll();
     }
